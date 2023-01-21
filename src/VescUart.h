@@ -5,22 +5,27 @@
 #include "datatypes.h"
 #include "buffer.h"
 #include "crc.h"
-
-/**idle warning time */
 typedef enum
 {
-	FLOAT_IDLE_WARNING_TIME_DISABLE = 0,
-	FLOAT_IDLE_WARNING_TIME_1M,
-	FLOAT_IDLE_WARNING_TIME_5M,
-	FLOAT_IDLE_WARNING_TIME_10M,
-	FLOAT_IDLE_WARNING_TIME_30M,
-	FLOAT_IDLE_WARNING_TIME_60M,
-	FLOAT_IDLE_WARNING_TIME_120M
+  SOUND_HORN,
+  SOUND_EXCUSE_ME,
+  SOUND_POLICE,
+} soundType;
+    /**idle warning time */
+typedef enum
+{
+  FLOAT_IDLE_WARNING_TIME_DISABLE = 0,
+  FLOAT_IDLE_WARNING_TIME_1M,
+  FLOAT_IDLE_WARNING_TIME_5M,
+  FLOAT_IDLE_WARNING_TIME_10M,
+  FLOAT_IDLE_WARNING_TIME_30M,
+  FLOAT_IDLE_WARNING_TIME_60M,
+  FLOAT_IDLE_WARNING_TIME_120M
 
 } FLOAT_IDLE_TIME;
 
 /** float command  */
-enum
+typedef enum
 {
 	FLOAT_COMMAND_GET_INFO = 0,		 // get version / package info
 	FLOAT_COMMAND_GET_RTDATA = 1,	 // get rt data
@@ -28,11 +33,18 @@ enum
 	FLOAT_COMMAND_TUNE_DEFAULTS = 3, // set tune to defaults (no eeprom)
 	FLOAT_COMMAND_CFG_SAVE = 4,		 // save config to eeprom
 	FLOAT_COMMAND_CFG_RESTORE = 5,	 // restore config from eeprom
-	FLOAT_COMMAND_GET_ADAVANCED=6,  // get Adavance setting only for SPESC 
+
+	FLOAT_COMMAND_GET_ADVANCED=6,  // get ADVANCED setting only for SPESC 
 	FLOAT_COMMAND_ENGINE_SOUND_INFO=7, // engine sound info , erpm ,duty 
-
+  //sound triggered 
+	FLOAT_COMMAND_HORN_TRIGGERED=8,
+	FLOAT_COMMAND_EXCUSE_ME_TRIGGERED=9,
+	FLOAT_COMMAND_POLICE_TRIGGERED=10,
+  //
+  FLOAT_COMMAND_HORN_RESET=11,
+	FLOAT_COMMAND_EXCUSE_ME_RESET=12,
+	FLOAT_COMMAND_POLICE_RESET=13,
 } float_commands;
-
 
 // float data type
 typedef enum
@@ -78,9 +90,9 @@ class   VescUart
     float dutyCycle;
     float erpm;
     float inputVoltage;
-    bool sound_horn_triggered;
-    bool sound_excuse_me_trigger;
-    bool sound_police_triggered;
+    bool sound_horn_triggered=false;
+    bool sound_excuse_me_trigger=false;
+    bool sound_police_triggered=false;
   };
 
   struct advancedData
@@ -100,7 +112,7 @@ public:
   /**
    * @brief      Class constructor
    */
-  VescUart(uint32_t timeout_ms = 100);
+  VescUart(uint32_t timeout_ms = 150);
 
   /**
    * @brief      Set the serial port for uart communication
@@ -120,6 +132,12 @@ bool getSoundData();
 
 /**get advanced data */
 bool getAdvancedData();
+
+void reset_sound_triggered( float_commands cmd);
+
+bool is_sound_horn_triggered(void);
+bool is_sound_excuse_me_triggered(void);
+bool is_sound_police_triggered(void);
 
 
 private:

@@ -212,7 +212,7 @@ bool VescUart::processReadPacket(uint8_t *message ,int lenPay )
 	if (debugPort != NULL)
 
 	{
-		debugPort.printf("message length:%d \n", lenPay);
+		debugPort->printf("message length:%d \n", lenPay);
 	}
 	message++; // Removes the packetId from the actual message (payload)
 
@@ -220,9 +220,9 @@ bool VescUart::processReadPacket(uint8_t *message ,int lenPay )
 	{
 
 	case COMM_FW_VERSION:
-		fw_version.major = message[index++];
-		fw_version.minor = message[index++];
+		
 		return true;
+		break;
 	case COMM_CUSTOM_APP_DATA:
 
 		uint8_t magicNum, command;
@@ -230,7 +230,8 @@ bool VescUart::processReadPacket(uint8_t *message ,int lenPay )
 		command = (uint8_t)message[index++];
 		if (lenPay< 2)
 		{
-			debugPort.printf("Float App: Missing Args\n");
+			if (debugPort != NULL)
+				debugPort->printf("Float App: Missing Args\n");
 			return false;
 		}
 
@@ -246,14 +247,15 @@ bool VescUart::processReadPacket(uint8_t *message ,int lenPay )
 			{
 				sndData.pidOutput = buffer_get_float32_auto(message, &index);
 				sndData.motorCurrent = buffer_get_float32_auto(message, &index);
-				sndData.floatState = (FloatState)buffer_get_uint16(message, &index);
-				sndData.swState = (SwitchState)buffer_get_uint16(message, &index);
+				sndData.floatState = (FloatState)message[index++];
+				sndData.swState = (SwitchState)message[index++];
 				sndData.dutyCycle = buffer_get_float32_auto(message, &index);
 				sndData.erpm = buffer_get_float32_auto(message, &index);
 				sndData.inputVoltage = buffer_get_float32_auto(message, &index);
-				sndData.sound_horn_triggered = buffer_get_bool(message, &index);
-				sndData.sound_excuse_me_trigger = buffer_get_bool(message, &index);
-				sndData.sound_police_triggered = buffer_get_bool(message, &index);
+				//sound triggered data
+				sndData.sound_horn_triggered = (bool) message[index++];
+				sndData.sound_excuse_me_trigger = (bool) message[index++];
+				sndData.sound_police_triggered =(bool) message[index++];
 				if (debugPort != NULL)
 				{
 					debugPort->printf(" Pid Value		:%.2f\r\n", sndData.pidOutput);
@@ -263,28 +265,28 @@ bool VescUart::processReadPacket(uint8_t *message ,int lenPay )
 					debugPort->printf(" Duty Cycle	:%.2f\r\n", sndData.dutyCycle);
 					debugPort->printf(" ERPM			:%.2f\r\n", sndData.erpm);
 					debugPort->printf(" Input Voltage	:%.2f\r\n", sndData.inputVoltage);
-					debugPort->printf(" Sound horn triggered	:%.2f\r\n", sndData.sound_horn_triggered);
-					debugPort->printf(" sound excuse me triggered :%.2f\r\n", sndData.sound_excuse_me_trigger);
-					debugPort->printf(" sound police triggered	:%.2f\r\n", sndData.sound_police_triggered);
+					debugPort->printf(" Sound horn triggered	:%s\r\n", sndData.sound_horn_triggered?"true":"false");
+					debugPort->printf(" sound excuse me triggered :%s\r\n", sndData.sound_excuse_me_trigger?"true":"false");
+					debugPort->printf(" sound police triggered	:%s\r\n", sndData.sound_police_triggered?"true":"false");
 				}
 
 				return true;
 			}
-			else if (command == FLOAT_COMMAND_GET_ADAVANCED)
-			{	advData.lights_mode=(uint8_t) message[index++];
+			else if (command == FLOAT_COMMAND_GET_ADVANCED )
+			{	advData.lights_mode=(FLOAT_LIGHT_MODE) message[index++];
 				advData.idle_warning_time=(FLOAT_IDLE_TIME) message[index++];
-				advData.engine_sound_enable=buffer_get_bool(message,&index);
-				advData.engine_sound_volume=buffer_append_uint16(message,&index);
+				advData.engine_sound_enable=(bool)message[index++];
+				advData.engine_sound_volume=buffer_get_uint16(message,&index);
 				advData.over_speed_warning=(uint8_t) message[index++];
-				advData.startup_safety_warning=buffer_get_bool(message,&index);
+				advData.startup_safety_warning=(bool)message[index++];
 				if (debugPort != NULL)
 				{
-					debugPort->printf(" lights_modee		:%d\r\n", advData.lights_mode);
-					debugPort->printf(" idle_warning_time	:%d\r\n", advData.idle_warning_time);
-					debugPort->printf(" engine_sound_enable	:%d\r\n", advData.engine_sound_enable);
-					debugPort->printf(" advData.engine_sound_volume	:%d\r\n",advData.engine_sound_volume);
-					debugPort->printf(" advData.over_speed_warning	:%d\r\n", advData.over_speed_warning);
-					debugPort->printf("	advData.startup_safety_warning:%d\r\n", advData.startup_safety_warning);
+					debugPort->printf("lights_modee		:%d\r\n", advData.lights_mode);
+					debugPort->printf("idle_warning_time	:%d\r\n", advData.idle_warning_time);
+					debugPort->printf("engine_sound_enable	:%s\r\n", advData.engine_sound_enable?"true":"false");
+					debugPort->printf("advData.engine_sound_volume	:%d\r\n",advData.engine_sound_volume);
+					debugPort->printf("advData.over_speed_warning	:%d\r\n", advData.over_speed_warning);
+					debugPort->printf("advData.startup_safety_warning:%s\r\n", advData.startup_safety_warning?"true":"false");
 				}
 
 				return true;
@@ -295,9 +297,11 @@ bool VescUart::processReadPacket(uint8_t *message ,int lenPay )
 				return false;
 			}
 		}
+	 break;
 	default:
 		debugPort->printf(" Unknow command !");
 		return false;
+		break;
 	}
 }
 
@@ -320,7 +324,7 @@ bool VescUart::getSoundData()
 {
 	if (debugPort != NULL)
 	{
-		debugPort->println("Send Command:" + String(FLOAT_COMMAND_GET_INFO) +"sound data" );
+		debugPort->println("Send Command:sound data" );
 	}
 
 	int32_t index = 0;
@@ -329,13 +333,12 @@ bool VescUart::getSoundData()
 	payload[index++] = {COMM_CUSTOM_APP_DATA};
 	payload[index++] = 101; //surfdado's magic number
 	payload[index++] = {FLOAT_COMMAND_ENGINE_SOUND_INFO};
-	//payload[index++] = 10; //surfdado's magic number 
 	packSendPayload(payload, payloadSize);
 
 	uint8_t message[256];
 	int messageLength = receiveUartMessage(message);
 	
-	if (messageLength >0)
+	if (messageLength >=28)
 	{
 		return processReadPacket(message ,messageLength);
 	}
@@ -348,22 +351,58 @@ bool VescUart::getAdvancedData()
 {
 	if (debugPort != NULL)
 	{
-		debugPort->println("Send Command:" + String(FLOAT_COMMAND_GET_ADAVANCE) +"for advanced data");
+		debugPort->println("Send Command");
 	}
 	int32_t index = 0;
 	int payloadSize = 3;
 	uint8_t payload[payloadSize];
 	payload[index++] = {COMM_CUSTOM_APP_DATA};
 	payload[index++] = 101; //surfdado's magic number 
-	payload[index++] = {FLOAT_COMMAND_GET_ADAVANCED}; //float command 
+	payload[index++] = {FLOAT_COMMAND_GET_ADVANCED}; //float command 
 	packSendPayload(payload, payloadSize);
 
 	uint8_t message[256];
 	int messageLength = receiveUartMessage(message);
 	
-	if (messageLength >0)
+	if (messageLength >=10)
 	{
 		return processReadPacket(message , messageLength);
 	}
 	return false;
+}
+
+void VescUart::reset_sound_triggered( float_commands cmd )
+{
+	int32_t index = 0;
+	int payloadSize = 3;
+	uint8_t payload[payloadSize];
+	payload[index++] = {COMM_CUSTOM_APP_DATA};
+	payload[index++] = 101; // surfdado's magic number
+	if (cmd >= 11)
+	{
+		payload[index++] = cmd;
+		debugPort->printf("reset sound %d\r\n",cmd );
+		packSendPayload(payload, payloadSize);
+	}
+	else
+	{
+		debugPort->println("command not meet !");
+	}
+	
+}
+
+bool VescUart::is_sound_horn_triggered(void)
+{
+	return sndData.sound_horn_triggered;
+
+}
+
+bool VescUart::is_sound_excuse_me_triggered(void)
+{
+return  sndData.sound_excuse_me_trigger;
+}
+
+bool VescUart::is_sound_police_triggered(void)
+{
+return sndData.sound_police_triggered;
 }
