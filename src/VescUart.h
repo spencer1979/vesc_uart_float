@@ -28,7 +28,7 @@ enum
 	FLOAT_COMMAND_TUNE_DEFAULTS = 3, // set tune to defaults (no eeprom)
 	FLOAT_COMMAND_CFG_SAVE = 4,		 // save config to eeprom
 	FLOAT_COMMAND_CFG_RESTORE = 5,	 // restore config from eeprom
-	FLOAT_COMMAND_GET_ADAVANCE=6,  // get Adavance setting only for SPESC 
+	FLOAT_COMMAND_GET_ADAVANCED=6,  // get Adavance setting only for SPESC 
 	FLOAT_COMMAND_ENGINE_SOUND_INFO=7, // engine sound info , erpm ,duty 
 
 } float_commands;
@@ -78,6 +78,9 @@ class   VescUart
     float dutyCycle;
     float erpm;
     float inputVoltage;
+    bool sound_horn_triggered;
+    bool sound_excuse_me_trigger;
+    bool sound_police_triggered;
   };
 
   struct advancedData
@@ -161,7 +164,7 @@ private:
    * @param      message  - The payload to extract data from
    * @return     True if the process was a success
    */
-  bool processReadPacket(uint8_t *message);
+  bool processReadPacket(uint8_t *message , int lenPay);
 
   /**
    * @brief      Help Function to print uint8_t array over Serial for Debug
