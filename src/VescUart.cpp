@@ -320,7 +320,7 @@ void VescUart::serialPrint(uint8_t *data, int len)
 }
 
 
-bool VescUart::getSoundData()
+bool VescUart::getSoundData(void)
 {
 	if (debugPort != NULL)
 	{
@@ -347,7 +347,7 @@ bool VescUart::getSoundData()
 }
 
 
-bool VescUart::getAdvancedData()
+bool VescUart::getAdvancedData(void)
 {
 	if (debugPort != NULL)
 	{
@@ -370,7 +370,40 @@ bool VescUart::getAdvancedData()
 	}
 	return false;
 }
+bool VescUart::is_app_disable_output(void)
+{
+	if (debugPort != NULL)
+	{
+		debugPort->println("Send Command:sound data" );
+	}
+	int32_t index = 0;
+	int payloadSize = 1;
+	uint8_t payload[payloadSize];
+	payload[index++] = {COMM_APP_DISABLE_OUTPUT};
+	packSendPayload(payload, payloadSize);
+	
+	uint8_t message[10];
+	COMM_PACKET_ID packetId;
+	int32_t index = 0;
+	int messageLength = receiveUartMessage(message);
+	packetId = (COMM_PACKET_ID)message[0];
+	
+	if (debugPort != NULL)
 
+	{
+		debugPort->printf("message length:%d \n", messageLength);
+	}
+
+ debugPort->printf("message :%d \n", message[2]);
+//  if (messageLength > 10)
+//  {
+// 		if (packetId == COMM_APP_DISABLE_OUTPUT)
+// 		{
+// 			debugPort->printf("message :%d \n", message[2]);
+// 			return true;
+// 		}
+//  }
+}
 void VescUart::reset_sound_triggered( float_commands cmd )
 {
 	int32_t index = 0;
@@ -405,4 +438,24 @@ return  sndData.sound_excuse_me_trigger;
 bool VescUart::is_sound_police_triggered(void)
 {
 return sndData.sound_police_triggered;
+}
+
+bool VescUart::gte_engine_sound_enable(void)
+{
+
+return advData.engine_sound_enable;
+}
+bool VescUart::get_startup_safety_warning(void)
+{
+return advData.startup_safety_warning;
+}
+uint16_t VescUart::get_engine_sound_volume(void)
+{
+
+return advData.engine_sound_volume;
+}
+uint8_t VescUart::get_over_speed_warning(void)
+{
+
+return advData.over_speed_warning;
 }
