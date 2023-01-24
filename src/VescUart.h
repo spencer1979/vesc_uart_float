@@ -158,7 +158,7 @@ void reset_sound_triggered( float_commands cmd);
 bool is_sound_horn_triggered(void);
 bool is_sound_excuse_me_triggered(void);
 bool is_sound_police_triggered(void);
-bool gte_engine_sound_enable(void);
+bool get_engine_sound_enable(void);
 bool get_startup_safety_warning(void);
 uint16_t get_engine_sound_volume(void);
 uint8_t get_over_speed_warning(void);

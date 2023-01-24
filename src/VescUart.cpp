@@ -432,7 +432,7 @@ bool VescUart::is_sound_police_triggered(void)
 	return sndData.sound_police_triggered;
 }
 
-bool VescUart::gte_engine_sound_enable(void)
+bool VescUart::get_engine_sound_enable(void)
 {
 
 	return advData.engine_sound_enable;
