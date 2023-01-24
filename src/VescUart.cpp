@@ -246,7 +246,7 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 				sndData.pidOutput = buffer_get_float32_auto(message, &index);
 				sndData.motorCurrent = buffer_get_float32_auto(message, &index);
 				sndData.floatState = (FloatState)message[index++];
-				sndData.swState = (SwitchState)message[index++];
+				sndData.swState = (uint8_t)message[index++];
 				sndData.dutyCycle = buffer_get_float32_auto(message, &index);
 				sndData.erpm = buffer_get_float32_auto(message, &index);
 				sndData.inputVoltage = buffer_get_float32_auto(message, &index);
@@ -337,9 +337,8 @@ float VescUart::get_fw_version(void)
 		{
 			if (debugPort != NULL)
 				debugPort->printf("version %.1f", (float)(message[1] + (message[2] / 10)));
-			fw.major=(uint8_t)message[1];
-			fw.minor=(uint8_t)message[2];
-			return (float)(fw.major+ (fw.major / 10)) ;
+
+			return (float)(message[1] + (message[2] / 10)) ;
 
 	}
 	return 0.0;
@@ -459,11 +458,11 @@ float VescUart::get_motor_current(void)
 {
 	return sndData.motorCurrent;
 }
-FloatState VescUart::get_float_state(void)
+uint8_t VescUart::get_float_state(void)
 {
 	return sndData.floatState;
 }
-SwitchState VescUart::get_switch_state(void)
+uint8_t VescUart::get_switch_state(void)
 {
 	return sndData.swState;
 }

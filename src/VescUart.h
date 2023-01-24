@@ -6,10 +6,6 @@
 #include "buffer.h"
 #include "crc.h"
 
-struct fw_version
-{
-  uint8_t major ,minor;
-};
 
 typedef enum
 {
@@ -99,8 +95,8 @@ class   VescUart
   struct soundData
   { float pidOutput;
     float motorCurrent;
-    FloatState floatState;
-    SwitchState swState;
+    uint8_t floatState;
+    uint8_t swState;
     float dutyCycle;
     float erpm;
     float inputVoltage;
@@ -111,8 +107,8 @@ class   VescUart
 
   struct advancedData
   {
-  FLOAT_LIGHT_MODE lights_mode;
-	FLOAT_IDLE_TIME idle_warning_time;
+  uint8_t lights_mode;
+	uint8_t idle_warning_time;
 	bool engine_sound_enable;
 	uint16_t engine_sound_volume;
 	uint8_t over_speed_warning;
@@ -149,8 +145,8 @@ bool getAdvancedData(void);
 float get_fw_version(void);
 float get_pid_output(void);
 float get_motor_current(void);
-FloatState get_float_state(void);
-SwitchState get_switch_state(void);
+uint8_t get_float_state(void);
+uint8_t get_switch_state(void);
 float get_duty_cycle(void);
 float get_erpm(void);
 float get_input_voltage(void);
@@ -173,7 +169,7 @@ private:
   Stream *debugPort = NULL;
   soundData sndData; 
   advancedData advData;
-  fw_version fw;
+
   /**
    * @brief      Packs the payload and sends it over Serial
    *
