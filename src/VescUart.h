@@ -5,6 +5,12 @@
 #include "datatypes.h"
 #include "buffer.h"
 #include "crc.h"
+
+struct fw_version
+{
+  uint8_t major ,minor;
+};
+
 typedef enum
 {
   SOUND_HORN,
@@ -120,7 +126,7 @@ public:
   /**
    * @brief      Class constructor
    */
-  VescUart(uint32_t timeout_ms = 150);
+  VescUart(uint32_t timeout_ms = 100);
 
   /**
    * @brief      Set the serial port for uart communication
@@ -136,19 +142,22 @@ public:
 
 
 /** get float data */
-bool getSoundData(void);
-
+bool update(void);
 /**get advanced data */
 bool getAdvancedData(void);
-/**check app is disable */
-bool is_app_disable_output(void);
-
+/**return value  */
+float get_fw_version(void);
+float get_pid_output(void);
+float get_motor_current(void);
+FloatState get_float_state(void);
+SwitchState get_switch_state(void);
+float get_duty_cycle(void);
+float get_erpm(void);
+float get_input_voltage(void);
 void reset_sound_triggered( float_commands cmd);
-
 bool is_sound_horn_triggered(void);
 bool is_sound_excuse_me_triggered(void);
 bool is_sound_police_triggered(void);
-
 bool gte_engine_sound_enable(void);
 bool get_startup_safety_warning(void);
 uint16_t get_engine_sound_volume(void);
@@ -164,6 +173,7 @@ private:
   Stream *debugPort = NULL;
   soundData sndData; 
   advancedData advData;
+  fw_version fw;
   /**
    * @brief      Packs the payload and sends it over Serial
    *
