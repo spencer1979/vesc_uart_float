@@ -6,9 +6,6 @@
 #include "buffer.h"
 #include "crc.h"
 
-
-
-/** float command  */
 typedef enum
 {
 	FLOAT_COMMAND_GET_INFO = 0,		 // get version / package info
@@ -17,35 +14,60 @@ typedef enum
 	FLOAT_COMMAND_TUNE_DEFAULTS = 3, // set tune to defaults (no eeprom)
 	FLOAT_COMMAND_CFG_SAVE = 4,		 // save config to eeprom
 	FLOAT_COMMAND_CFG_RESTORE = 5,	 // restore config from eeprom
+	
+	FLOAT_COMMAND_GET_ADVANCED,  // get ADVANCED setting only for SPESC 
+	FLOAT_COMMAND_ENGINE_SOUND_INFO, // engine sound info , erpm ,duty 
+	//single
+  FLOAT_COMMAND_GET_DUTYCYCLE,
+	FLOAT_COMMAND_GET_ERPM,
+	FLOAT_COMMAND_GET_PID_OUTPUT,
+	FLOAT_COMMAND_GET_SWITCH_STATE,
+	FLOAT_COMMAND_GET_MOTOR_CURRENT,
+  FLOAT_COMMAND_GET_INPUT_VOLTAGE,
+	//advanced 
+	FLOAT_COMMAND_GET_LIGHT_MODE,
+	FLOAT_COMMAND_GET_IDLE_WARN_TIME,
+	FLOAT_COMMAND_GET_ENGINE_SOUND_VOLUME,
+	FLOAT_COMMAND_GET_ENGIEN_SOUND_ENABLE,
+	FLOAT_COMMAND_GET_OVER_SPEED_WARN,
+	FLOAT_COMMAND_GET_START_UP_WARN,
+	//button 
+	FLOAT_COMMAND_HORN_TRIGGERED,
+	FLOAT_COMMAND_EXCUSE_ME_TRIGGERED,
+	FLOAT_COMMAND_POLICE_TRIGGERED,
+	FLOAT_COMMAND_HORN_RESET,
+	FLOAT_COMMAND_EXCUSE_ME_RESET,
+	FLOAT_COMMAND_POLICE_RESET,
 
-	FLOAT_COMMAND_GET_ADVANCED=6,  // get ADVANCED setting only for SPESC 
-	FLOAT_COMMAND_ENGINE_SOUND_INFO=7, // engine sound info , erpm ,duty 
-  //sound triggered 
-	FLOAT_COMMAND_HORN_TRIGGERED=8,
-	FLOAT_COMMAND_EXCUSE_ME_TRIGGERED=9,
-	FLOAT_COMMAND_POLICE_TRIGGERED=10,
-  //
-  FLOAT_COMMAND_HORN_RESET=11,
-	FLOAT_COMMAND_EXCUSE_ME_RESET=12,
-	FLOAT_COMMAND_POLICE_RESET=13,
 } float_commands;
 
 
 class   VescUart
-{ 
- /**This data structure is used for engine sound */
-  struct soundData
-  { float pidOutput;
-    float motorCurrent;
-    uint8_t floatState;
-    uint8_t swState;
-    float dutyCycle;
-    float erpm;
-    float inputVoltage;
+{
+  struct fw_version
+  {
+    uint8_t fw_version_major, fw_version_minor;
+  };
+
+  struct trigger_sound
+  {
     bool sound_horn_triggered=false;
     bool sound_excuse_me_trigger=false;
     bool sound_police_triggered=false;
   };
+
+ /**This data structure is used for engine sound */
+  struct soundData
+  { float pidOutput;
+    float motorCurrent;
+    uint8_t swState;
+    float dutyCycle;
+    float erpm;
+    float inputVoltage;
+    fw_version fw;
+    trigger_sound triggerSound;
+  };
+
 
   struct advancedData
   {
@@ -64,7 +86,7 @@ public:
   /**
    * @brief      Class constructor
    */
-  VescUart(uint32_t timeout_ms = 100);
+  VescUart(uint32_t timeout_ms = 100 );
 
   /**
    * @brief      Set the serial port for uart communication
@@ -80,14 +102,13 @@ public:
 
 
 /** get float data */
-bool update(void);
+bool soundUpdate(void);
 /**get advanced data */
 bool advancedUpdate(void);
 /**return value  */
-float get_fw_version(void);
+uint8_t get_fw_version(void);
 float get_pid_output(void);
 float get_motor_current(void);
-uint8_t get_float_state(void);
 uint8_t get_switch_state(void);
 float get_duty_cycle(void);
 float get_erpm(void);
@@ -110,9 +131,9 @@ private:
   /** Variabel to hold the reference to the Serial object to use for debugging.
    * Uses the class Stream instead of HarwareSerial */
   Stream *debugPort = NULL;
+  
   soundData sndData; 
   advancedData advData;
-
   /**
    * @brief      Packs the payload and sends it over Serial
    *
