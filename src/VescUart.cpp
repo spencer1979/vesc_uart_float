@@ -245,7 +245,7 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 			{
 				sndData.pidOutput = buffer_get_float32_auto(message, &index);
 				sndData.motorCurrent = buffer_get_float32_auto(message, &index);
-				sndData.floatState = (FloatState)message[index++];
+				sndData.floatState = (uint8_t)message[index++];
 				sndData.swState = (uint8_t)message[index++];
 				sndData.dutyCycle = buffer_get_float32_auto(message, &index);
 				sndData.erpm = buffer_get_float32_auto(message, &index);
@@ -272,20 +272,20 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 			}
 			else if (command == FLOAT_COMMAND_GET_ADVANCED)
 			{
-				advData.lights_mode = (FLOAT_LIGHT_MODE)message[index++];
-				advData.idle_warning_time = (FLOAT_IDLE_TIME)message[index++];
-				advData.engine_sound_enable = (bool)message[index++];
-				advData.engine_sound_volume = buffer_get_uint16(message, &index);
-				advData.over_speed_warning = (uint8_t)message[index++];
-				advData.startup_safety_warning = (bool)message[index++];
+				advData.adv_lights_mode = (uint8_t)message[index++];
+				advData.adv_idle_warning_time = (uint8_t)message[index++];
+				advData.adv_engine_sound_enable = (bool)message[index++];
+				advData.adv_engine_sound_volume = buffer_get_uint16(message, &index);
+				advData.adv_over_speed_warning = (uint8_t)message[index++];
+				advData.adv_startup_safety_warning = (bool)message[index++];
 				if (debugPort != NULL)
 				{
-					debugPort->printf("lights_modee		:%d\r\n", advData.lights_mode);
-					debugPort->printf("idle_warning_time	:%d\r\n", advData.idle_warning_time);
-					debugPort->printf("engine_sound_enable	:%s\r\n", advData.engine_sound_enable ? "true" : "false");
-					debugPort->printf("advData.engine_sound_volume	:%d\r\n", advData.engine_sound_volume);
-					debugPort->printf("advData.over_speed_warning	:%d\r\n", advData.over_speed_warning);
-					debugPort->printf("advData.startup_safety_warning:%s\r\n", advData.startup_safety_warning ? "true" : "false");
+					debugPort->printf("lights_modee		:%d\r\n", advData.adv_lights_mode);
+					debugPort->printf("idle_warning_time	:%d\r\n", advData.adv_idle_warning_time);
+					debugPort->printf("engine_sound_enable	:%s\r\n", advData.adv_engine_sound_enable ? "true" : "false");
+					debugPort->printf("advData.engine_sound_volume	:%d\r\n", advData.adv_engine_sound_volume);
+					debugPort->printf("advData.over_speed_warning	:%d\r\n", advData.adv_over_speed_warning);
+					debugPort->printf("advData.startup_safety_warning:%s\r\n", advData.adv_startup_safety_warning ? "true" : "false");
 				}
 
 				return true;
@@ -318,7 +318,8 @@ void VescUart::serialPrint(uint8_t *data, int len)
 }
 
 float VescUart::get_fw_version(void)
-{ if (debugPort != NULL)
+{
+	if (debugPort != NULL)
 	{
 		debugPort->println("Send Command:Get fw version");
 	}
@@ -330,22 +331,20 @@ float VescUart::get_fw_version(void)
 
 	uint8_t message[256];
 	COMM_PACKET_ID packetId;
-	int messageLength=receiveUartMessage(message);
-	if ( messageLength > 38 )
-	{   packetId = (COMM_PACKET_ID) message[0];
-		if (packetId==COMM_FW_VERSION) 
+	int messageLength = receiveUartMessage(message);
+	if (messageLength > 38)
+	{
+		packetId = (COMM_PACKET_ID)message[0];
+		if (packetId == COMM_FW_VERSION)
 		{
 			if (debugPort != NULL)
 				debugPort->printf("version %.1f", (float)(message[1] + (message[2] / 10)));
 
-			return (float)(message[1] + (message[2] / 10)) ;
-
+			return (float)(message[1] + (message[2] / 10));
+		}
 	}
 	return 0.0;
-	}
-
 }
-
 
 bool VescUart::update(void)
 {
@@ -372,7 +371,7 @@ bool VescUart::update(void)
 	return false;
 }
 
-bool VescUart::getAdvancedData(void)
+bool VescUart::advancedUpdate(void)
 {
 	if (debugPort != NULL)
 	{
@@ -430,27 +429,6 @@ bool VescUart::is_sound_police_triggered(void)
 {
 	return sndData.sound_police_triggered;
 }
-
-bool VescUart::get_engine_sound_enable(void)
-{
-
-	return advData.engine_sound_enable;
-}
-bool VescUart::get_startup_safety_warning(void)
-{
-	return advData.startup_safety_warning;
-}
-uint16_t VescUart::get_engine_sound_volume(void)
-{
-
-	return advData.engine_sound_volume;
-}
-uint8_t VescUart::get_over_speed_warning(void)
-{
-
-	return advData.over_speed_warning;
-}
-
 float VescUart::get_pid_output(void)
 { return sndData.pidOutput;
 }
@@ -477,4 +455,24 @@ float VescUart::get_erpm(void)
 float VescUart::get_input_voltage(void)
 {
 	return sndData.inputVoltage;
+}
+//advanced data 
+bool VescUart::get_adv_engine_sound_enable(void)
+{
+
+	return advData.adv_engine_sound_enable;
+}
+bool VescUart::get_adv_startup_safety_warning(void)
+{
+	return advData.adv_startup_safety_warning;
+}
+uint16_t VescUart::get_adv_engine_sound_volume(void)
+{
+
+	return advData.adv_engine_sound_volume;
+}
+uint8_t VescUart::get_adv_over_speed_warning(void)
+{
+
+	return advData.adv_over_speed_warning;
 }

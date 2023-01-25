@@ -7,24 +7,6 @@
 #include "crc.h"
 
 
-typedef enum
-{
-  SOUND_HORN,
-  SOUND_EXCUSE_ME,
-  SOUND_POLICE,
-} soundType;
-    /**idle warning time */
-typedef enum
-{
-  FLOAT_IDLE_WARNING_TIME_DISABLE = 0,
-  FLOAT_IDLE_WARNING_TIME_1M,
-  FLOAT_IDLE_WARNING_TIME_5M,
-  FLOAT_IDLE_WARNING_TIME_10M,
-  FLOAT_IDLE_WARNING_TIME_30M,
-  FLOAT_IDLE_WARNING_TIME_60M,
-  FLOAT_IDLE_WARNING_TIME_120M
-
-} FLOAT_IDLE_TIME;
 
 /** float command  */
 typedef enum
@@ -48,46 +30,6 @@ typedef enum
 	FLOAT_COMMAND_POLICE_RESET=13,
 } float_commands;
 
-// float data type
-typedef enum
-{
-	STARTUP = 0,
-	RUNNING = 1,
-	RUNNING_TILTBACK = 2,
-	RUNNING_WHEELSLIP = 3,
-	RUNNING_UPSIDEDOWN = 4,
-	FAULT_ANGLE_PITCH = 5,
-	FAULT_ANGLE_ROLL = 6,
-	FAULT_SWITCH_HALF = 7,
-	FAULT_SWITCH_FULL = 8,
-	FAULT_STARTUP = 9,
-	FAULT_REVERSE = 10,
-	FAULT_QUICKSTOP = 11
-} FloatState;
-
-typedef enum
-{
-	OFF = 0,
-	HALF,
-	ON
-} SwitchState;
-
-/**light mode*/
-typedef enum
-{
-	FLOAT_LIGHT_OFF = 0,
-	FLOAT_LIGHT_FLASH,
-	FLOAT_LIGHT_FULL_ON
-} FLOAT_LIGHT_MODE;
-
-// audio source
-// using VESC controll id to get source
-typedef enum
-{
-  AUDIO_SOURCE_CSR,
-  AUDIO_SOURCE_ESP32,
-} AudioSource;
-
 
 class   VescUart
 { 
@@ -107,12 +49,12 @@ class   VescUart
 
   struct advancedData
   {
-  uint8_t lights_mode;
-	uint8_t idle_warning_time;
-	bool engine_sound_enable;
-	uint16_t engine_sound_volume;
-	uint8_t over_speed_warning;
-	bool startup_safety_warning;
+  uint8_t adv_lights_mode;
+	uint8_t adv_idle_warning_time;
+	bool adv_engine_sound_enable;
+	uint16_t adv_engine_sound_volume;
+	uint8_t adv_over_speed_warning;
+	bool adv_startup_safety_warning;
   };
 
   // Timeout - specifies how long the function will wait for the vesc to respond
@@ -140,7 +82,7 @@ public:
 /** get float data */
 bool update(void);
 /**get advanced data */
-bool getAdvancedData(void);
+bool advancedUpdate(void);
 /**return value  */
 float get_fw_version(void);
 float get_pid_output(void);
@@ -154,10 +96,11 @@ void reset_sound_triggered( float_commands cmd);
 bool is_sound_horn_triggered(void);
 bool is_sound_excuse_me_triggered(void);
 bool is_sound_police_triggered(void);
-bool get_engine_sound_enable(void);
-bool get_startup_safety_warning(void);
-uint16_t get_engine_sound_volume(void);
-uint8_t get_over_speed_warning(void);
+//advanced data 
+bool get_adv_engine_sound_enable(void);
+bool get_adv_startup_safety_warning(void);
+uint16_t get_adv_engine_sound_volume(void);
+uint8_t get_adv_over_speed_warning(void);
 
 
 private:
