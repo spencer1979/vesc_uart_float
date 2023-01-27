@@ -794,3 +794,35 @@ uint8_t VescUart::get_adv_over_speed_warning(void)
 
 	return 0;
 }
+
+void VescUart::reset_sound_triggered(float_commands cmd )
+{
+  
+	if (debugPort != NULL)
+		debugPort->println("reset_sound_triggered");
+
+	int32_t index = 0;
+	int payloadSize = 3;
+	uint8_t payload[payloadSize];
+	payload[index++] = {COMM_CUSTOM_APP_DATA};
+	payload[index++] = 101;
+	if (cmd == FLOAT_COMMAND_HORN_RESET)
+	{
+		payload[index++] = {FLOAT_COMMAND_HORN_RESET};
+		debugPort->printf("FLOAT_COMMAND_HORN_RESET send  ");
+	}
+
+	else if (cmd == FLOAT_COMMAND_EXCUSE_ME_RESET)
+	{
+		payload[index++] = {FLOAT_COMMAND_EXCUSE_ME_RESET};
+		debugPort->printf("FLOAT_COMMAND_EXCUSE_ME_RESET send  ");
+	}
+
+	else if (cmd == FLOAT_COMMAND_POLICE_RESET)
+	{
+		payload[index++] = {FLOAT_COMMAND_POLICE_RESET};
+		debugPort->printf("FLOAT_COMMAND_POLICE_RESET send  ");
+	}
+
+	packSendPayload(payload, payloadSize);
+}
