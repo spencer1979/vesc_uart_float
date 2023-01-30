@@ -6,47 +6,39 @@
 #include "buffer.h"
 #include "crc.h"
 
-typedef enum {
-	FLOAT_COMMAND_GET_INFO = 0,		// get version / package info
-	FLOAT_COMMAND_GET_RTDATA = 1,	// get rt data
-	FLOAT_COMMAND_RT_TUNE = 2,		// runtime tuning (don't write to eeprom)
-	FLOAT_COMMAND_TUNE_DEFAULTS = 3,// set tune to defaults (no eeprom)
-	FLOAT_COMMAND_CFG_SAVE = 4,		// save config to eeprom
-	FLOAT_COMMAND_CFG_RESTORE = 5,	// restore config from eeprom
-	FLOAT_COMMAND_TUNE_OTHER = 6,	// make runtime changes to startup/etc
-	FLOAT_COMMAND_RC_MOVE = 7,		// move motor while board is idle
+typedef enum
+{
 
-	FLOAT_COMMAND_GET_ADVANCED,  // get ADVANCED setting only for SPESC 
-	FLOAT_COMMAND_ENGINE_SOUND_INFO, // engine sound info , erpm ,duty 
-	//single
-    FLOAT_COMMAND_GET_DUTYCYCLE,
-	FLOAT_COMMAND_GET_ERPM,
-	FLOAT_COMMAND_GET_PID_OUTPUT,
-	FLOAT_COMMAND_GET_SWITCH_STATE,
-	FLOAT_COMMAND_GET_MOTOR_CURRENT,
-	FLOAT_COMMAND_GET_INPUT_VOLTAGE,
-	//advanced 
-	FLOAT_COMMAND_GET_LIGHT_MODE,
-	FLOAT_COMMAND_GET_IDLE_WARN_TIME,
-	FLOAT_COMMAND_GET_ENGINE_SOUND_VOLUME,
-	FLOAT_COMMAND_GET_ENGIEN_SOUND_ENABLE,
-	FLOAT_COMMAND_GET_OVER_SPEED_WARN,
-	FLOAT_COMMAND_GET_START_UP_WARN,
-	//button 
-	//esp32 get 
-	FLOAT_COMMAND_HORN_TRIGGERED,
-	FLOAT_COMMAND_EXCUSE_ME_TRIGGERED,
-	FLOAT_COMMAND_POLICE_TRIGGERED,
-	//esp32 reset 
-	FLOAT_COMMAND_HORN_RESET,
-	FLOAT_COMMAND_EXCUSE_ME_RESET,
-	FLOAT_COMMAND_POLICE_RESET,
-	//app set true 
-	FLOAT_COMMAND_HORN_SET,
-	FLOAT_COMMAND_EXCUSE_ME_SET,
-	FLOAT_COMMAND_POLICE_SET,
+	ESP_COMMAND_GET_ADVANCED,	   // get ADVANCED setting only for SPESC
+	ESP_COMMAND_ENGINE_SOUND_INFO, // engine sound info , erpm ,duty
+								   // single
+	ESP_COMMAND_GET_DUTYCYCLE,
+	ESP_COMMAND_GET_ERPM,
+	ESP_COMMAND_GET_PID_OUTPUT,
+	ESP_COMMAND_GET_SWITCH_STATE,
+	ESP_COMMAND_GET_MOTOR_CURRENT,
+	ESP_COMMAND_GET_INPUT_VOLTAGE,
+	// advanced
+	ESP_COMMAND_GET_LIGHT_MODE,
+	ESP_COMMAND_GET_IDLE_WARN_TIME,
+	ESP_COMMAND_GET_ENGINE_SOUND_VOLUME,
+	ESP_COMMAND_GET_ENGIEN_SOUND_ENABLE,
+	ESP_COMMAND_GET_OVER_SPEED_WARN,
+	ESP_COMMAND_GET_START_UP_WARN,
+	// button
+	// esp32 get the sound trigger
+	ESP_COMMAND_SOUND_GET,
+	// app set sound trigger
+	ESP_COMMAND_SOUND_SET,
+} esp_commands;
 
-} float_commands;
+
+enum
+{
+	SOUND_HORN_TRIGGERED ,
+	SOUND_EXCUSE_ME_TRIGGERED,
+	SOUND_POLICE_TRIGGERED,
+} soundTriggeredType;
 
 class   VescUart
 {
@@ -119,10 +111,7 @@ uint8_t get_switch_state(void);
 float get_duty_cycle(void);
 float get_erpm(void);
 float get_input_voltage(void);
-void reset_sound_triggered( float_commands cmd);
-bool is_sound_horn_triggered(void);
-bool is_sound_excuse_me_triggered(void);
-bool is_sound_police_triggered(void);
+uint8_t get_sound_triggered(void);
 //advanced data 
 bool get_adv_engine_sound_enable(void);
 bool get_adv_startup_safety_warning(void);
