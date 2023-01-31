@@ -250,14 +250,13 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 		{
 		case ESP_COMMAND_ENGINE_SOUND_INFO:
 		{
-
+			sndData.pidOutput = buffer_get_float32_auto(message, &index);
+			sndData.motorCurrent = buffer_get_float32_auto(message, &index);
+			sndData.swState = (uint8_t)message[index++];
 			sndData.dutyCycle = buffer_get_float32_auto(message, &index);
 			sndData.erpm = buffer_get_float32_auto(message, &index);
 			sndData.inputVoltage = buffer_get_float32_auto(message, &index);
-			// sound triggered data
-			sndData.triggerSound.sound_horn_triggered = (bool)message[index++];
-			sndData.triggerSound.sound_excuse_me_trigger = (bool)message[index++];
-			sndData.triggerSound.sound_police_triggered = (bool)message[index++];
+			
 			if (debugPort != NULL)
 			{
 				debugPort->printf(" Pid Value		:%.2f\r\n", sndData.pidOutput);
@@ -266,9 +265,7 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 				debugPort->printf(" Duty Cycle	:%.2f\r\n", sndData.dutyCycle);
 				debugPort->printf(" ERPM			:%.2f\r\n", sndData.erpm);
 				debugPort->printf(" Input Voltage	:%.2f\r\n", sndData.inputVoltage);
-				debugPort->printf(" Sound horn triggered	:%s\r\n", sndData.triggerSound.sound_horn_triggered ? "true" : "false");
-				debugPort->printf(" sound excuse me triggered :%s\r\n", sndData.triggerSound.sound_excuse_me_trigger ? "true" : "false");
-				debugPort->printf(" sound police triggered	:%s\r\n", sndData.triggerSound.sound_police_triggered ? "true" : "false");
+
 			}
 
 			return true;
@@ -454,7 +451,7 @@ bool VescUart::advancedUpdate(void)
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
-	if (messageLength >= 10)
+	if (messageLength >= 7)
 	{
 		return processReadPacket(message, messageLength);
 	}
@@ -465,19 +462,20 @@ bool VescUart::advancedUpdate(void)
 uint8_t VescUart::get_sound_triggered(void)
 {
 	if (debugPort != NULL)
-	{
 		debugPort->println("get_sound_triggered");
-	}
+
+	uint8_t message[10];
+	COMM_PACKET_ID packetId;
 	int32_t index = 0;
 	int payloadSize = 3;
+	//send command to vesc 
 	uint8_t payload[payloadSize];
 	payload[index++] = {COMM_CUSTOM_APP_DATA};
 	payload[index++] = 102;
 	payload[index++] = {ESP_COMMAND_SOUND_GET};
 	packSendPayload(payload, payloadSize);
 
-	uint8_t message[10];
-	COMM_PACKET_ID packetId;
+	//process received data 
 	index = 0;
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
@@ -490,7 +488,7 @@ uint8_t VescUart::get_sound_triggered(void)
 		{
 			if (message[1] == 102 && message[2] == ESP_COMMAND_SOUND_GET)
 			{   
-				return  message[3];
+				return (uint8_t) message[3];
 			}
 		} 
 	}
