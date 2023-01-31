@@ -3,7 +3,6 @@
 
 VescUart::VescUart(uint32_t timeout_ms ) : _TIMEOUT(timeout_ms) 
 {
-
 }
 
 void VescUart::setSerialPort(Stream *port)
@@ -214,19 +213,7 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 	}
 	message++; // Removes the packetId from the actual message (payload)
 
-	switch (packetId)
-	{
-
-	case COMM_FW_VERSION:
-
-	{
-		sndData.fw.fw_version_major = (uint8_t)message[index++];
-		sndData.fw.fw_version_minor = (uint8_t)message[index++];
-		return true;
-	}
-
-	case COMM_CUSTOM_APP_DATA:
-
+	if (packetId == COMM_CUSTOM_APP_DATA)
 	{
 		uint8_t magicNum, command;
 		magicNum = (uint8_t)message[index++];
@@ -256,7 +243,7 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 			sndData.dutyCycle = buffer_get_float32_auto(message, &index);
 			sndData.erpm = buffer_get_float32_auto(message, &index);
 			sndData.inputVoltage = buffer_get_float32_auto(message, &index);
-			
+
 			if (debugPort != NULL)
 			{
 				debugPort->printf(" Pid Value		:%.2f\r\n", sndData.pidOutput);
@@ -265,7 +252,6 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 				debugPort->printf(" Duty Cycle	:%.2f\r\n", sndData.dutyCycle);
 				debugPort->printf(" ERPM			:%.2f\r\n", sndData.erpm);
 				debugPort->printf(" Input Voltage	:%.2f\r\n", sndData.inputVoltage);
-
 			}
 
 			return true;
@@ -364,11 +350,6 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 			return false;
 		}
 		}
-
-	default:
-		debugPort->printf(" Unknow command !");
-		return false;
-	}
 	}
 }
 
@@ -387,24 +368,43 @@ void VescUart::serialPrint(uint8_t *data, int len)
 
 uint8_t VescUart::get_fw_version(void)
 {
-	if (debugPort != NULL)
-	{
-		debugPort->println("Send Command:Get fw version");
-	}
+	
+	uint8_t message[10];
+	COMM_PACKET_ID packetId;
 	int32_t index = 0;
-	int payloadSize = 1;
+	int payloadSize = 3;
+	//send command to vesc 
 	uint8_t payload[payloadSize];
-	payload[index++] = {COMM_FW_VERSION};
+	payload[index++] = {COMM_CUSTOM_APP_DATA};
+	payload[index++] = 101;
+	payload[index++] = 0;//FLOAT_COMMAND_GET_INFO
 	packSendPayload(payload, payloadSize);
 
-	uint8_t message[50];
+	//process received data 
+	index = 0;
 	int messageLength = receiveUartMessage(message);
-	if (messageLength >= 39 )
-	{
-		return processReadPacket(message, messageLength)?  sndData.fw.fw_version_major:	0 ;
-	}
-	return 0;
+	if (debugPort != NULL)
+		debugPort->printf("message Length :%d\r\n", messageLength);
 
+	if (messageLength >= 3)
+	{
+		packetId = (COMM_PACKET_ID)message[0];
+		if (packetId == COMM_CUSTOM_APP_DATA)
+		{
+			if (message[1] == 101 && message[2] == 0 )
+			{   
+				
+				if (debugPort != NULL)
+					debugPort->printf("float version: %d\n", (uint8_t) message[3]);
+				return (uint8_t) message[3];
+			} 
+		} 
+	}
+
+	if (debugPort != NULL)
+		debugPort->printf("float version: 0\n");
+	return 0 ;
+	
 }
 
 bool VescUart::soundUpdate(void)

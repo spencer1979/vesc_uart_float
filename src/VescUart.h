@@ -32,7 +32,6 @@ typedef enum
 	ESP_COMMAND_SOUND_SET,
 } esp_commands;
 
-
 enum
 {
 	SOUND_HORN_TRIGGERED ,
@@ -42,17 +41,6 @@ enum
 
 class   VescUart
 {
-  struct fw_version
-  {
-    uint8_t fw_version_major, fw_version_minor;
-  };
-
-  struct trigger_sound
-  {
-    bool sound_horn_triggered=false;
-    bool sound_excuse_me_trigger=false;
-    bool sound_police_triggered=false;
-  };
 
  /**This data structure is used for engine sound */
   struct soundData
@@ -62,8 +50,6 @@ class   VescUart
     float dutyCycle;
     float erpm;
     float inputVoltage;
-    fw_version fw;
-    trigger_sound triggerSound;
   };
 
 
@@ -127,7 +113,6 @@ private:
   /** Variabel to hold the reference to the Serial object to use for debugging.
    * Uses the class Stream instead of HarwareSerial */
   Stream *debugPort = NULL;
-  
   soundData sndData; 
   advancedData advData;
   /**
