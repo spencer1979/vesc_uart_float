@@ -328,19 +328,10 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 			advData.adv_engine_sound_volume = buffer_get_uint16(message, &index);
 			return true;
 		}
-		case ESP_COMMAND_GET_ENGIEN_SOUND_ENABLE:
-		{
-			advData.adv_engine_sound_enable = (bool)message[index++];
-			return true;
-		}
+	
 		case ESP_COMMAND_GET_OVER_SPEED_WARN:
 		{
 			advData.adv_over_speed_warning = (uint8_t)message[index++];
-			return true;
-		}
-		case ESP_COMMAND_GET_START_UP_WARN:
-		{
-			advData.adv_startup_safety_warning = (bool)message[index++];
 			return true;
 		}
 
@@ -637,53 +628,47 @@ float VescUart::get_input_voltage(void)
 
 	return -1;
 }
-// advanced data
-bool VescUart::get_adv_engine_sound_enable(void)
+
+uint8_t VescUart::get_adv_enable_data(void)
 {
 if (debugPort != NULL)
-		debugPort->println("Get advanced engine sound enable");
+		debugPort->println("get enable data");
 
+	uint8_t message[10];
+	COMM_PACKET_ID packetId;
 	int32_t index = 0;
 	int payloadSize = 3;
+	//send command to vesc 
 	uint8_t payload[payloadSize];
 	payload[index++] = {COMM_CUSTOM_APP_DATA};
 	payload[index++] = 102;
-	payload[index++] = {ESP_COMMAND_GET_ENGIEN_SOUND_ENABLE};
+	payload[index++] = {ESP_COMMAND_GET_ENABLE_DATA};
 	packSendPayload(payload, payloadSize);
 
-	uint8_t message[10];
+	//process received data 
+	index = 0;
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
 
-	if (messageLength >= 4)
-		return processReadPacket(message, messageLength) ? advData.adv_engine_sound_enable : false;
+	if (messageLength >= 3)
+	{
+		packetId = (COMM_PACKET_ID)message[0];
+		if (packetId == COMM_CUSTOM_APP_DATA)
+		{
+			if (message[1] == 102 && message[2] == ESP_COMMAND_GET_ENABLE_DATA)
+			{   
+				return (uint8_t) message[3];
+			}
+		} 
+	}
 
-	return false;
+	return 0 ;
+
+
 }
-bool VescUart::get_adv_startup_safety_warning(void)
-{
-	if (debugPort != NULL)
-		debugPort->println("get_adv_startup_safety_warning");
 
-	int32_t index = 0;
-	int payloadSize = 3;
-	uint8_t payload[payloadSize];
-	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102;
-	payload[index++] = {ESP_COMMAND_GET_START_UP_WARN};
-	packSendPayload(payload, payloadSize);
 
-	uint8_t message[10];
-	int messageLength = receiveUartMessage(message);
-	if (debugPort != NULL)
-		debugPort->printf("message Length :%d\r\n", messageLength);
-
-	if (messageLength >= 4)
-		return processReadPacket(message, messageLength) ? advData.adv_startup_safety_warning: false;
-
-	return false;
-}
 uint16_t VescUart::get_adv_engine_sound_volume(void)
 {
 

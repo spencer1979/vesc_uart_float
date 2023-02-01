@@ -11,7 +11,7 @@ typedef enum
 
 	ESP_COMMAND_GET_ADVANCED,	   // get ADVANCED setting only for SPESC
 	ESP_COMMAND_ENGINE_SOUND_INFO, // engine sound info , erpm ,duty
-								   // single
+								   
 	ESP_COMMAND_GET_DUTYCYCLE,
 	ESP_COMMAND_GET_ERPM,
 	ESP_COMMAND_GET_PID_OUTPUT,
@@ -22,9 +22,8 @@ typedef enum
 	ESP_COMMAND_GET_LIGHT_MODE,
 	ESP_COMMAND_GET_IDLE_WARN_TIME,
 	ESP_COMMAND_GET_ENGINE_SOUND_VOLUME,
-	ESP_COMMAND_GET_ENGIEN_SOUND_ENABLE,
+	ESP_COMMAND_GET_ENABLE_DATA, //reference to float_enable_mask
 	ESP_COMMAND_GET_OVER_SPEED_WARN,
-	ESP_COMMAND_GET_START_UP_WARN,
 	// button
 	// esp32 get the sound trigger
 	ESP_COMMAND_SOUND_GET,
@@ -32,12 +31,22 @@ typedef enum
 	ESP_COMMAND_SOUND_SET,
 } esp_commands;
 
-enum
+typedef enum
 {
 	SOUND_HORN_TRIGGERED ,
 	SOUND_EXCUSE_ME_TRIGGERED,
 	SOUND_POLICE_TRIGGERED,
 } soundTriggeredType;
+
+
+//Determine the function of a certain bit
+typedef enum
+{
+	EXT_DCDC_ENABLE_MASK_BIT,
+	ENGINE_SOUND_ENABLE_MASK_BIT,
+	START_UP_WARNING_ENABLE_MASK_BIT,
+} float_enable_mask;
+
 
 class   VescUart
 {
@@ -99,8 +108,8 @@ float get_erpm(void);
 float get_input_voltage(void);
 uint8_t get_sound_triggered(void);
 //advanced data 
-bool get_adv_engine_sound_enable(void);
-bool get_adv_startup_safety_warning(void);
+
+uint8_t get_adv_enable_data(void);
 uint16_t get_adv_engine_sound_volume(void);
 uint8_t get_adv_over_speed_warning(void);
 
