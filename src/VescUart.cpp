@@ -307,12 +307,8 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 				{
 					debugPort->printf("sound triggered data is : %d \n", soundTriggered);
 				}
-				if (soundTriggered != -1)
-					return true;
-				else
-					return false;
+				return true;
 			}
-			case ESP_COMMAND_SOUND_SET:
 
 			default:
 			{
@@ -383,7 +379,7 @@ bool VescUart::soundUpdate(void)
 {
 	if (debugPort != NULL)
 	{
-		debugPort->println("Send Command:sound data");
+		debugPort->println("soundUpdate();");
 	}
 
 	int32_t index = 0;
@@ -443,7 +439,7 @@ return engineData.erpm;
 float VescUart::get_input_voltage(void)
 {
 	if (debugPort != NULL)
-		debugPort->println("Get input voltage");
+		debugPort->printf("Get input voltage %.2f \n", engineData.inputVoltage);
 
 return engineData.inputVoltage;
 
@@ -451,7 +447,7 @@ return engineData.inputVoltage;
 float VescUart::get_pid_output(void){
 
 	if (debugPort != NULL)
-		debugPort->println("Get pid output");
+		debugPort->printf("Get pid output %.2f\n",engineData.pidOutput);
 return engineData.pidOutput;
 
 }
@@ -459,7 +455,7 @@ return engineData.pidOutput;
 uint8_t VescUart::get_switch_state(void)
 {
 	if (debugPort != NULL)
-		debugPort->println("Get float switch state");
+		debugPort->printf("Get float switch state :%d\n",engineData.swState);
 	return engineData.swState;
 }
 
@@ -468,7 +464,7 @@ uint8_t VescUart::get_switch_state(void)
 uint16_t VescUart::get_engine_sound_volume(void)
 {
 if (debugPort != NULL)
-		debugPort->println("get_adv_engine_sound_volume");
+		debugPort->printf("get_adv_engine_sound_volume:%d \n" ,settingData.engine_sound_volume );
 
 	return settingData.engine_sound_volume;
 }
@@ -489,10 +485,11 @@ uint8_t VescUart::get_idle_warning_time(void)
 
    return settingData.idle_warning_time;
 }
+
 int8_t VescUart::get_enable_item_data(void)
 {
    if (debugPort != NULL)
-		debugPort->printf("get_enable_item_data :%d\n", settingData.idle_warning_time);
+		debugPort->printf("get_enable_item_data :\n");
 
    int32_t index = 0;
    int payloadSize = 3;
@@ -515,7 +512,7 @@ int8_t VescUart::get_enable_item_data(void)
    return -1;
 }
 
-int8_t VescUart::get_sound_triggered(void)
+uint8_t VescUart::get_sound_triggered(void)
 {
 	if (debugPort != NULL)
 		debugPort->println("get_sound_triggered");

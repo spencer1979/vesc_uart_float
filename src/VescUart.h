@@ -89,7 +89,7 @@ public:
 
   int8_t get_enable_item_data(void);
 
-  int8_t get_sound_triggered(void);
+  uint8_t get_sound_triggered(void);
 
   /**
    *Only return data, need to use the above function to update
@@ -114,7 +114,7 @@ private:
   Stream *debugPort = NULL;
   soundData_t engineData;
   advancedData_t settingData;
-  int8_t soundTriggered=-1;
+  uint8_t soundTriggered=0;
   int8_t enableItemData=-1; // check float_enable_mask neum 
   /**
    * @brief      Packs the payload and sends it over Serial
