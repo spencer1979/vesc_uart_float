@@ -253,10 +253,10 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 
 				if (debugPort != NULL)
 				{
-					debugPort->printf(" Pid Value		:%.2f\r\n", engineData.pidOutput);
-					debugPort->printf(" Switch State	:%d\r\n", (uint8_t)engineData.swState);
-					debugPort->printf(" ERPM			:%.2f\r\n", engineData.erpm);
-					debugPort->printf(" Input Voltage	:%.2f\r\n", engineData.inputVoltage);
+					debugPort->printf(" Pid Value		:%.2f\n", engineData.pidOutput);
+					debugPort->printf(" Switch State	:%d\n", (uint8_t)engineData.swState);
+					debugPort->printf(" ERPM			:%.2f\n", engineData.erpm);
+					debugPort->printf(" Input Voltage	:%.2f\n", engineData.inputVoltage);
 				}
 
 				return true;
@@ -532,10 +532,10 @@ uint8_t VescUart::get_sound_triggered(void)
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("get message length is :%d\n", messageLength);
-	if (messageLength==4)
+	if (messageLength>=4)
 	{
 		if( processReadPacket(message, messageLength)  ) 
 		return soundTriggered;
 	}
-	return -1;
+	return 0;
 }
