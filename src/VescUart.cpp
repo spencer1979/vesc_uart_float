@@ -198,7 +198,6 @@ int VescUart::packSendPayload(uint8_t *payload, int lenPay)
 	// Returns number of send bytes
 	return count;
 }
-
 bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 {
 
@@ -212,12 +211,13 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 		debugPort->printf("message length:%d \n", lenPay);
 	}
 	message++; // Removes the packetId from the actual message (payload)
-
 	if (packetId == COMM_CUSTOM_APP_DATA)
 	{
+
 		uint8_t magicNum, command;
 		magicNum = (uint8_t)message[index++];
 		command = (uint8_t)message[index++];
+
 		if (lenPay < 2)
 		{
 			if (debugPort != NULL)
@@ -225,122 +225,108 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 			return false;
 		}
 
-		if (magicNum != 102)
+		if (magicNum != ESP32_COMMAND_ID)
 
 		{
-			serialPort->printf(" Magic number wrong.");
+			serialPort->printf(" Magic number wrong.\n");
 			return false;
 		}
-
-		//
-		switch (command)
+		if (magicNum == ESP32_COMMAND_ID)
 		{
-		case ESP_COMMAND_ENGINE_SOUND_INFO:
-		{
-			sndData.pidOutput = buffer_get_float32_auto(message, &index);
-			sndData.motorCurrent = buffer_get_float32_auto(message, &index);
-			sndData.swState = (uint8_t)message[index++];
-			sndData.dutyCycle = buffer_get_float32_auto(message, &index);
-			sndData.erpm = buffer_get_float32_auto(message, &index);
-			sndData.inputVoltage = buffer_get_float32_auto(message, &index);
 
-			if (debugPort != NULL)
+			//
+			switch (command)
 			{
-				debugPort->printf(" Pid Value		:%.2f\r\n", sndData.pidOutput);
-				debugPort->printf(" Motor Current	:%.2f\r\n", sndData.motorCurrent);
-				debugPort->printf(" Switch State	:%d\r\n", (uint8_t)sndData.swState);
-				debugPort->printf(" Duty Cycle	:%.2f\r\n", sndData.dutyCycle);
-				debugPort->printf(" ERPM			:%.2f\r\n", sndData.erpm);
-				debugPort->printf(" Input Voltage	:%.2f\r\n", sndData.inputVoltage);
+			case ESP_COMMAND_ENGINE_SOUND_INFO:
+			{
+				/**
+					float pidOutput;
+					uint8_t swState;
+					float erpm;
+					float inputVoltage;
+
+				 */
+				engineData.pidOutput = buffer_get_float32_auto(message, &index);
+				engineData.swState = (uint8_t)message[index++];
+				engineData.erpm = buffer_get_float32_auto(message, &index);
+				engineData.inputVoltage = buffer_get_float32_auto(message, &index);
+
+				if (debugPort != NULL)
+				{
+					debugPort->printf(" Pid Value		:%.2f\r\n", engineData.pidOutput);
+					debugPort->printf(" Switch State	:%d\r\n", (uint8_t)engineData.swState);
+					debugPort->printf(" ERPM			:%.2f\r\n", engineData.erpm);
+					debugPort->printf(" Input Voltage	:%.2f\r\n", engineData.inputVoltage);
+				}
+
+				return true;
 			}
 
-			return true;
-		}
+			case ESP_COMMAND_GET_ADV_INFO:
 
-		case ESP_COMMAND_GET_ADVANCED:
-
-		{
-			advData.adv_lights_mode = (uint8_t)message[index++];
-			advData.adv_idle_warning_time = (uint8_t)message[index++];
-			advData.adv_engine_sound_enable = (bool)message[index++];
-			advData.adv_engine_sound_volume = buffer_get_uint16(message, &index);
-			advData.adv_over_speed_warning = (uint8_t)message[index++];
-			advData.adv_startup_safety_warning = (bool)message[index++];
-			if (debugPort != NULL)
 			{
-				debugPort->printf("lights_modee		:%d\r\n", advData.adv_lights_mode);
-				debugPort->printf("idle_warning_time	:%d\r\n", advData.adv_idle_warning_time);
-				debugPort->printf("engine_sound_enable	:%s\r\n", advData.adv_engine_sound_enable ? "true" : "false");
-				debugPort->printf("advData.engine_sound_volume	:%d\r\n", advData.adv_engine_sound_volume);
-				debugPort->printf("advData.over_speed_warning	:%d\r\n", advData.adv_over_speed_warning);
-				debugPort->printf("advData.startup_safety_warning:%s\r\n", advData.adv_startup_safety_warning ? "true" : "false");
+				/**
+				 *
+					uint8_t lights_mode;
+					uint8_t idle_warning_time;
+					uint16_t engine_sound_volume;
+					uint8_t over_speed_warning;
+
+				 */
+				settingData.lights_mode = (uint8_t)message[index++];
+				settingData.idle_warning_time = (uint8_t)message[index++];
+				settingData.engine_sound_volume = buffer_get_uint16(message, &index);
+				settingData.over_speed_warning = (uint8_t)message[index++];
+
+				if (debugPort != NULL)
+				{
+					debugPort->printf("lights_modee		:%d\n", settingData.lights_mode);
+					debugPort->printf("idle_warning_time	:%d\n", settingData.idle_warning_time);
+					debugPort->printf("engine sound volume	:%d\n", settingData.engine_sound_volume);
+					debugPort->printf("settingData.over_speed_warning	:%d\r\n", settingData.over_speed_warning);
+				}
+
+				return true;
 			}
 
-			return true;
-		}
+			case ESP_COMMAND_ENABLE_ITEM_INFO:
 
-			// single
-		case ESP_COMMAND_GET_DUTYCYCLE:
-		{
-			sndData.dutyCycle = buffer_get_float32_auto(message, &index);
-			return true;
-		}
-		case ESP_COMMAND_GET_ERPM:
-		{
-			sndData.erpm = buffer_get_float32_auto(message, &index);
-			return true;
-		}
-		case ESP_COMMAND_GET_PID_OUTPUT:
-		{
-			sndData.pidOutput = buffer_get_float32_auto(message, &index);
-			return true;
-		}
-		case ESP_COMMAND_GET_SWITCH_STATE:
-		{
-			sndData.swState = (uint8_t)message[index++];
-			return true;
-		}
-		case ESP_COMMAND_GET_MOTOR_CURRENT:
-		{
-			sndData.motorCurrent = buffer_get_float32_auto(message, &index);
-			return true;
-		}
+				enableItemData = (uint8_t)message[index++];
+				if (debugPort != NULL)
+				{
+					debugPort->printf("Enable item data is : %d \n", enableItemData);
+				}
+				if (enableItemData != -1)
+					return true;
+				else
+					return false;
 
-		case ESP_COMMAND_GET_INPUT_VOLTAGE:
-		{
-			sndData.inputVoltage = buffer_get_float32_auto(message, &index);
-			return true;
-		}
+			case ESP_COMMAND_SOUND_GET:
+			{
+				soundTriggered = (uint8_t)message[index++];
+				if (debugPort != NULL)
+				{
+					debugPort->printf("sound triggered data is : %d \n", soundTriggered);
+				}
+				if (soundTriggered != -1)
+					return true;
+				else
+					return false;
+			}
+			case ESP_COMMAND_SOUND_SET:
 
-		// advanced
-		case ESP_COMMAND_GET_LIGHT_MODE:
-		{
-			advData.adv_lights_mode = (uint8_t)message[index++];
-			return true;
-		}
-		case ESP_COMMAND_GET_IDLE_WARN_TIME:
-		{
-			advData.adv_idle_warning_time = (uint8_t)message[index++];
-			return true;
-		}
-		case ESP_COMMAND_GET_ENGINE_SOUND_VOLUME:
-		{
-			advData.adv_engine_sound_volume = buffer_get_uint16(message, &index);
-			return true;
+			default:
+			{
+				debugPort->printf(" Unknow Float command !");
+				return true;
+			}
+			}
 		}
 	
-		case ESP_COMMAND_GET_OVER_SPEED_WARN:
-		{
-			advData.adv_over_speed_warning = (uint8_t)message[index++];
-			return true;
-		}
-
-		default:
-		{
-			debugPort->printf(" Unknow Float command !");
-			return false;
-		}
-		}
+	
+	
+	
+	
 	}
 }
 
@@ -360,7 +346,7 @@ void VescUart::serialPrint(uint8_t *data, int len)
 uint8_t VescUart::get_fw_version(void)
 {
 	
-	uint8_t message[10];
+	uint8_t message[50];
 	COMM_PACKET_ID packetId;
 	int32_t index = 0;
 	int payloadSize = 3;
@@ -409,11 +395,11 @@ bool VescUart::soundUpdate(void)
 	int payloadSize = 3;
 	uint8_t payload[payloadSize];
 	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102; // surfdado's magic number
+	payload[index++] = ESP32_COMMAND_ID; // surfdado's magic number
 	payload[index++] = {ESP_COMMAND_ENGINE_SOUND_INFO};
 	packSendPayload(payload, payloadSize);
 
-	uint8_t message[50];
+	uint8_t message[256];
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
@@ -428,14 +414,14 @@ bool VescUart::advancedUpdate(void)
 {
 	if (debugPort != NULL)
 	{
-		debugPort->println("Send Command");
+		debugPort->printf("Send Command\n");
 	}
 	int32_t index = 0;
 	int payloadSize = 3;
 	uint8_t payload[payloadSize];
 	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102;							 // surfdado's magic number
-	payload[index++] = {ESP_COMMAND_GET_ADVANCED}; // float command
+	payload[index++] = ESP32_COMMAND_ID;							 // surfdado's magic number
+	payload[index++] = {ESP_COMMAND_GET_ADV_INFO}; // float command
 	packSendPayload(payload, payloadSize);
 
 	uint8_t message[256];
@@ -450,270 +436,114 @@ bool VescUart::advancedUpdate(void)
 	return false;
 }
 
-uint8_t VescUart::get_sound_triggered(void)
+
+float VescUart::get_erpm(void)
 {
 	if (debugPort != NULL)
-		debugPort->println("get_sound_triggered");
+		debugPort->printf("Get Erpm\n");
 
-	uint8_t message[10];
-	COMM_PACKET_ID packetId;
-	int32_t index = 0;
-	int payloadSize = 3;
-	//send command to vesc 
-	uint8_t payload[payloadSize];
-	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102;
-	payload[index++] = {ESP_COMMAND_SOUND_GET};
-	packSendPayload(payload, payloadSize);
+return engineData.erpm;
 
-	//process received data 
-	index = 0;
-	int messageLength = receiveUartMessage(message);
-	if (debugPort != NULL)
-		debugPort->printf("message Length :%d\r\n", messageLength);
-
-	if (messageLength >= 3)
-	{
-		packetId = (COMM_PACKET_ID)message[0];
-		if (packetId == COMM_CUSTOM_APP_DATA)
-		{
-			if (message[1] == 102 && message[2] == ESP_COMMAND_SOUND_GET)
-			{   
-				return (uint8_t) message[3];
-			}
-		} 
-	}
-
-	return 0 ;
 }
-
-float VescUart::get_pid_output(void)
+float VescUart::get_input_voltage(void)
 {
+	if (debugPort != NULL)
+		debugPort->println("Get input voltage");
+
+return engineData.inputVoltage;
+
+}
+float VescUart::get_pid_output(void){
+
 	if (debugPort != NULL)
 		debugPort->println("Get pid output");
+return engineData.pidOutput;
 
-	int32_t index = 0;
-	int payloadSize = 3;
-	uint8_t payload[payloadSize];
-	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102;
-	payload[index++] = {ESP_COMMAND_GET_PID_OUTPUT};
-	packSendPayload(payload, payloadSize);
-
-	uint8_t message[10];
-	int messageLength = receiveUartMessage(message);
-	if (debugPort != NULL)
-		debugPort->printf("message Length :%d\r\n", messageLength);
-
-	if (messageLength >= 6)
-		return processReadPacket(message, messageLength) ? sndData.pidOutput : 0.0;
-
-	return 0.0;
-}
-
-float VescUart::get_motor_current(void)
-{
-	if (debugPort != NULL)
-		debugPort->println("Get motor current");
-
-	int32_t index = 0;
-	int payloadSize = 3;
-	uint8_t payload[payloadSize];
-	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102;
-	payload[index++] = {ESP_COMMAND_GET_MOTOR_CURRENT};
-	packSendPayload(payload, payloadSize);
-
-	uint8_t message[10];
-	int messageLength = receiveUartMessage(message);
-	if (debugPort != NULL)
-		debugPort->printf("message Length :%d\r\n", messageLength);
-
-	if (messageLength >= 6)
-		return processReadPacket(message, messageLength) ? sndData.motorCurrent : 0.0;
-
-	return 0.0;
 }
 
 uint8_t VescUart::get_switch_state(void)
 {
 	if (debugPort != NULL)
 		debugPort->println("Get float switch state");
-
-	int32_t index = 0;
-	int payloadSize = 3;
-	uint8_t payload[payloadSize];
-	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102;
-	payload[index++] = {ESP_COMMAND_GET_SWITCH_STATE};
-	packSendPayload(payload, payloadSize);
-
-	uint8_t message[10];
-	int messageLength = receiveUartMessage(message);
-	if (debugPort != NULL)
-		debugPort->printf("message Length :%d\r\n", messageLength);
-
-	if (messageLength >= 3)
-		return processReadPacket(message, messageLength) ? sndData.swState : 0;
-
-	return 0;
-}
-float VescUart::get_duty_cycle(void)
-{
-	if (debugPort != NULL)
-		debugPort->println("Get duty cycle");
-
-	int32_t index = 0;
-	int payloadSize = 3;
-	uint8_t payload[payloadSize];
-	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102;
-	payload[index++] = {ESP_COMMAND_GET_DUTYCYCLE};
-	packSendPayload(payload, payloadSize);
-
-	uint8_t message[10];
-	int messageLength = receiveUartMessage(message);
-	if (debugPort != NULL)
-		debugPort->printf("message Length :%d\r\n", messageLength);
-
-	if (messageLength >= 6)
-		return processReadPacket(message, messageLength) ? sndData.dutyCycle : 0.0;
-
-	return 0.0;
-}
-float VescUart::get_erpm(void)
-{
-	if (debugPort != NULL)
-		debugPort->println("Get Erpm");
-
-	int32_t index = 0;
-	int payloadSize = 3;
-	uint8_t payload[payloadSize];
-	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102;
-	payload[index++] = {ESP_COMMAND_GET_ERPM};
-	packSendPayload(payload, payloadSize);
-
-	uint8_t message[10];
-	int messageLength = receiveUartMessage(message);
-	if (debugPort != NULL)
-		debugPort->printf("message Length :%d\r\n", messageLength);
-
-	if (messageLength >= 6)
-		return processReadPacket(message, messageLength) ? sndData.erpm : 0.0;
-
-	return 0.0;
+	return engineData.swState;
 }
 
-float VescUart::get_input_voltage(void)
-{
-	if (debugPort != NULL)
-		debugPort->println("Get input voltage");
+//advanced data 
 
-	int32_t index = 0;
-	int payloadSize = 3;
-	uint8_t payload[payloadSize];
-	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102;
-	payload[index++] = {ESP_COMMAND_GET_INPUT_VOLTAGE};
-	packSendPayload(payload, payloadSize);
-
-	uint8_t message[10];
-	int messageLength = receiveUartMessage(message);
-	if (debugPort != NULL)
-		debugPort->printf("message Length :%d\r\n", messageLength);
-
-	if (messageLength >= 6)
-		return processReadPacket(message, messageLength) ? sndData.inputVoltage : -1;
-
-	return -1;
-}
-
-uint8_t VescUart::get_adv_enable_data(void)
+uint16_t VescUart::get_engine_sound_volume(void)
 {
 if (debugPort != NULL)
-		debugPort->println("get enable data");
-
-	uint8_t message[10];
-	COMM_PACKET_ID packetId;
-	int32_t index = 0;
-	int payloadSize = 3;
-	//send command to vesc 
-	uint8_t payload[payloadSize];
-	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102;
-	payload[index++] = {ESP_COMMAND_GET_ENABLE_DATA};
-	packSendPayload(payload, payloadSize);
-
-	//process received data 
-	index = 0;
-	int messageLength = receiveUartMessage(message);
-	if (debugPort != NULL)
-		debugPort->printf("message Length :%d\r\n", messageLength);
-
-	if (messageLength >= 3)
-	{
-		packetId = (COMM_PACKET_ID)message[0];
-		if (packetId == COMM_CUSTOM_APP_DATA)
-		{
-			if (message[1] == 102 && message[2] == ESP_COMMAND_GET_ENABLE_DATA)
-			{   
-				return (uint8_t) message[3];
-			}
-		} 
-	}
-
-	return 0 ;
-
-
-}
-
-
-uint16_t VescUart::get_adv_engine_sound_volume(void)
-{
-
-	if (debugPort != NULL)
 		debugPort->println("get_adv_engine_sound_volume");
 
-	int32_t index = 0;
-	int payloadSize = 3;
-	uint8_t payload[payloadSize];
-	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102;
-	payload[index++] = {ESP_COMMAND_GET_ENGINE_SOUND_VOLUME};
-	packSendPayload(payload, payloadSize);
-
-	uint8_t message[10];
-	int messageLength = receiveUartMessage(message);
-	if (debugPort != NULL)
-		debugPort->printf("message Length :%d\r\n", messageLength);
-
-	if (messageLength >= 5)
-		return processReadPacket(message, messageLength) ? advData.adv_engine_sound_volume: 100;
-
-	return 100;
+	return settingData.engine_sound_volume;
 }
-uint8_t VescUart::get_adv_over_speed_warning(void)
+uint8_t VescUart::get_over_speed_value(void)
 {
 
 	if (debugPort != NULL)
-		debugPort->println("get_adv_over_speed_warning");
+		debugPort->printf("over_speed_value:%d\n" , settingData.over_speed_warning);
 
+   return settingData.over_speed_warning;
+
+}
+uint8_t VescUart::get_idle_warning_time(void)
+{
+
+   if (debugPort != NULL)
+		debugPort->printf("get_idle_warning_time :%d\n", settingData.idle_warning_time);
+
+   return settingData.idle_warning_time;
+}
+int8_t VescUart::get_enable_item_data(void)
+{
+   if (debugPort != NULL)
+		debugPort->printf("get_enable_item_data :%d\n", settingData.idle_warning_time);
+
+   int32_t index = 0;
+   int payloadSize = 3;
+   uint8_t message[256];
+   uint8_t payload[payloadSize];
+   payload[index++] = {COMM_CUSTOM_APP_DATA};
+   payload[index++] = ESP32_COMMAND_ID;
+   payload[index++] = {ESP_COMMAND_ENABLE_ITEM_INFO}; // enable item data
+   // write
+   packSendPayload(payload, payloadSize);
+   // read
+   int messageLength = receiveUartMessage(message);
+   if (debugPort != NULL)
+		debugPort->printf("get message length is :%d\n", messageLength);
+   if (messageLength >= 7)
+   {
+		if (  processReadPacket(message, messageLength) )
+		return enableItemData;
+   }
+   return -1;
+}
+
+int8_t VescUart::get_sound_triggered(void)
+{
+	if (debugPort != NULL)
+		debugPort->println("get_sound_triggered");
+		if (debugPort != NULL)
+	{
+		debugPort->printf("Send Command\n");
+	}
 	int32_t index = 0;
 	int payloadSize = 3;
 	uint8_t payload[payloadSize];
 	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 102;
-	payload[index++] = {ESP_COMMAND_GET_OVER_SPEED_WARN};
+	payload[index++] = ESP32_COMMAND_ID;					
+	payload[index++] = {ESP_COMMAND_SOUND_GET}; // get button triggered data 
 	packSendPayload(payload, payloadSize);
 
-	uint8_t message[10];
+	uint8_t message[256];
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
-		debugPort->printf("message Length :%d\r\n", messageLength);
-
-	if (messageLength >= 3)
-		return processReadPacket(message, messageLength) ? advData.adv_over_speed_warning: 0;
-
-	return 0;
+		debugPort->printf("get message length is :%d\n", messageLength);
+	if (messageLength >= 7)
+	{
+		if( processReadPacket(message, messageLength)  ) 
+		return soundTriggered;
+	}
+	return -1;
 }
