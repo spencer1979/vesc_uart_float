@@ -290,16 +290,15 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 			}
 
 			case ESP_COMMAND_ENABLE_ITEM_INFO:
-
+			{
 				enableItemData = (uint8_t)message[index++];
 				if (debugPort != NULL)
 				{
 					debugPort->printf("Enable item data is : %d \n", enableItemData);
 				}
-				if (enableItemData != -1)
-					return true;
-				else
-					return false;
+				return true;
+			
+			}
 
 			case ESP_COMMAND_SOUND_GET:
 			{
@@ -322,12 +321,8 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 			}
 			}
 		}
-	
-	
-	
-	
-	
 	}
+	return false ;
 }
 
 void VescUart::serialPrint(uint8_t *data, int len)
@@ -403,7 +398,7 @@ bool VescUart::soundUpdate(void)
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
-	if (messageLength >= 27)
+	if (messageLength ==16)
 	{
 		return processReadPacket(message, messageLength);
 	}
@@ -428,7 +423,7 @@ bool VescUart::advancedUpdate(void)
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
-	if (messageLength >= 7)
+	if (messageLength ==8 )
 	{
 		return processReadPacket(message, messageLength);
 	}
@@ -512,7 +507,7 @@ int8_t VescUart::get_enable_item_data(void)
    int messageLength = receiveUartMessage(message);
    if (debugPort != NULL)
 		debugPort->printf("get message length is :%d\n", messageLength);
-   if (messageLength >= 7)
+   if (messageLength ==4)
    {
 		if (  processReadPacket(message, messageLength) )
 		return enableItemData;
@@ -540,7 +535,7 @@ int8_t VescUart::get_sound_triggered(void)
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("get message length is :%d\n", messageLength);
-	if (messageLength >= 7)
+	if (messageLength==4)
 	{
 		if( processReadPacket(message, messageLength)  ) 
 		return soundTriggered;

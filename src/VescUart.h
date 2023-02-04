@@ -66,7 +66,7 @@ public:
   /**
    * @brief      Class constructor
    */
-  VescUart(uint32_t timeout_ms = 100);
+  VescUart(uint32_t timeout_ms = 200);
 
   /**
    * @brief      Set the serial port for uart communication
