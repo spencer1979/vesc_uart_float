@@ -397,7 +397,7 @@ bool VescUart::soundUpdate(void)
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
-	if (messageLength >10)
+	if (messageLength == 16 )
 	{
 		return processReadPacket(message, messageLength);
 	}
@@ -422,7 +422,7 @@ bool VescUart::advancedUpdate(void)
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
-	if (messageLength > 10 )
+	if (messageLength == 12 )
 	{
 		return processReadPacket(message, messageLength);
 	}
