@@ -47,7 +47,6 @@ typedef enum
   { float pidOutput;
     uint8_t swState;
     float erpm;
-    float inputVoltage;
   };
 
 
@@ -57,7 +56,7 @@ typedef enum
 	uint8_t idle_warning_time;
 	uint16_t engine_sound_volume;
 	uint8_t over_speed_warning;
- 
+  float battery_level;
   };
   
 public:
@@ -96,7 +95,7 @@ public:
    */
   /**sound value Update with soundUdate() */
   float get_erpm(void);
-  float get_input_voltage(void);
+  float get_battery_level(void);
   float get_pid_output(void);
   uint8_t get_switch_state(void);
 
