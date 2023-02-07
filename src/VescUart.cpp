@@ -249,13 +249,14 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 				engineData.pidOutput = buffer_get_float32_auto(message, &index);
 				engineData.swState = (uint8_t)message[index++];
 				engineData.erpm = buffer_get_float32_auto(message, &index);
-			
+				engineData.inputVoltage=buffer_get_float32_auto(message, &index);
 
 				if (debugPort != NULL)
 				{
 					debugPort->printf(" Pid Value		:%.2f\n", engineData.pidOutput);
 					debugPort->printf(" Switch State	:%d\n", (uint8_t)engineData.swState);
 					debugPort->printf(" ERPM			:%.2f\n", engineData.erpm);
+					debugPort->printf(" Input Voltage			:%.2f\n", engineData.inputVoltage);
 	
 				}
 
@@ -277,6 +278,7 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 				settingData.idle_warning_time = (uint8_t)message[index++];
 				settingData.engine_sound_volume = buffer_get_uint16(message, &index);
 				settingData.over_speed_warning = (uint8_t)message[index++];
+				settingData.battery_level=buffer_get_float32_auto( message, &index);
 
 				if (debugPort != NULL)
 				{
@@ -284,6 +286,7 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 					debugPort->printf("idle_warning_time	:%d\n", settingData.idle_warning_time);
 					debugPort->printf("engine sound volume	:%d\n", settingData.engine_sound_volume);
 					debugPort->printf("settingData.over_speed_warning	:%d\r\n", settingData.over_speed_warning);
+					debugPort->printf("settingData.battery level	:%.2f \r\n", settingData.battery_level);
 				}
 
 				return true;
@@ -394,7 +397,7 @@ bool VescUart::soundUpdate(void)
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
-	if (messageLength ==16)
+	if (messageLength >10)
 	{
 		return processReadPacket(message, messageLength);
 	}
@@ -419,7 +422,7 @@ bool VescUart::advancedUpdate(void)
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
-	if (messageLength ==12 )
+	if (messageLength > 10 )
 	{
 		return processReadPacket(message, messageLength);
 	}
@@ -442,6 +445,14 @@ float VescUart::get_battery_level(void)
 		debugPort->printf("Get battery_level %.2f \n", settingData.battery_level);
 
 return settingData.battery_level;
+
+}
+float VescUart::get_input_voltage(void)
+{
+	if (debugPort != NULL)
+		debugPort->printf("Get input voltage %.2f \n", engineData.inputVoltage);
+
+return engineData.inputVoltage;
 
 }
 float VescUart::get_pid_output(void){

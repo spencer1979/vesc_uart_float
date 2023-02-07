@@ -47,6 +47,7 @@ typedef enum
   { float pidOutput;
     uint8_t swState;
     float erpm;
+    float inputVoltage;
   };
 
 
@@ -96,6 +97,7 @@ public:
   /**sound value Update with soundUdate() */
   float get_erpm(void);
   float get_battery_level(void);
+  float get_input_voltage(void);
   float get_pid_output(void);
   uint8_t get_switch_state(void);
 
