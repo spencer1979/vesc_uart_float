@@ -20,6 +20,13 @@ typedef enum
 
 } esp_commands;
 
+typedef enum
+{
+	SOUND_HORN_TRIGGERED ,
+	SOUND_EXCUSE_ME_TRIGGERED,
+	SOUND_POLICE_TRIGGERED,
+} sound_triggered_mask;
+
 //Determine the function of a certain bit
 typedef enum
 {
