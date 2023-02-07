@@ -279,6 +279,7 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 				settingData.engine_sound_volume = buffer_get_uint16(message, &index);
 				settingData.over_speed_warning = (uint8_t)message[index++];
 				settingData.battery_level=buffer_get_float32_auto( message, &index);
+				settingData.low_battery_warning_level=(float) message[index++];
 
 				if (debugPort != NULL)
 				{
@@ -287,6 +288,7 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 					debugPort->printf("engine sound volume	:%d\n", settingData.engine_sound_volume);
 					debugPort->printf("settingData.over_speed_warning	:%d\r\n", settingData.over_speed_warning);
 					debugPort->printf("settingData.battery level	:%.2f \r\n", settingData.battery_level);
+					debugPort->printf("settingData.low_battery_warning_level	:%.2f \r\n", settingData.low_battery_warning_level);
 				}
 
 				return true;
@@ -422,7 +424,7 @@ bool VescUart::advancedUpdate(void)
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
-	if (messageLength == 12 )
+	if (messageLength == 13 )
 	{
 		return processReadPacket(message, messageLength);
 	}
@@ -445,6 +447,14 @@ float VescUart::get_battery_level(void)
 		debugPort->printf("Get battery_level %.2f \n", settingData.battery_level);
 
 return settingData.battery_level;
+
+}
+float VescUart::get_low_battery_warning_level(void)
+{
+	if (debugPort != NULL)
+		debugPort->printf("Get battery_level %.2f \n", settingData.low_battery_warning_level);
+
+return settingData.low_battery_warning_level;
 
 }
 float VescUart::get_input_voltage(void)
@@ -497,7 +507,7 @@ uint8_t VescUart::get_idle_warning_time(void)
    return settingData.idle_warning_time;
 }
 
-int8_t VescUart::get_enable_item_data(void)
+uint8_t VescUart::get_enable_item_data(void)
 {
    if (debugPort != NULL)
 		debugPort->printf("get_enable_item_data :\n");
@@ -520,7 +530,7 @@ int8_t VescUart::get_enable_item_data(void)
 		if (  processReadPacket(message, messageLength) )
 		return enableItemData;
    }
-   return -1;
+   return 0;
 }
 
 uint8_t VescUart::get_sound_triggered(void)

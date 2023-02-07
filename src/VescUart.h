@@ -20,20 +20,13 @@ typedef enum
 
 } esp_commands;
 
-typedef enum
-{
-	SOUND_HORN_TRIGGERED ,
-	SOUND_EXCUSE_ME_TRIGGERED,
-	SOUND_POLICE_TRIGGERED,
-} sound_triggered_mask;
-
-
 //Determine the function of a certain bit
 typedef enum
-{ 
-	EXT_DCDC_ENABLE_MASK_BIT,
-	ENGINE_SOUND_ENABLE_MASK_BIT,
-	START_UP_WARNING_ENABLE_MASK_BIT,
+{
+EXT_DCDC_ENABLE_MASK_BIT=0,
+ENGINE_SOUND_ENABLE_MASK_BIT,
+START_UP_WARNING_ENABLE_MASK_BIT,
+LOW_BATTERY_WARNING_ENABLE_MASK_BIT,
 } float_enable_mask;
 
 
@@ -58,6 +51,7 @@ typedef enum
 	uint16_t engine_sound_volume;
 	uint8_t over_speed_warning;
   float battery_level;
+  float low_battery_warning_level;
   };
   
 public:
@@ -87,7 +81,7 @@ public:
 
   bool advancedUpdate(void);
 
-  int8_t get_enable_item_data(void);
+  uint8_t get_enable_item_data(void);
 
   uint8_t get_sound_triggered(void);
 
@@ -96,7 +90,7 @@ public:
    */
   /**sound value Update with soundUdate() */
   float get_erpm(void);
-  float get_battery_level(void);
+
   float get_input_voltage(void);
   float get_pid_output(void);
   uint8_t get_switch_state(void);
@@ -105,6 +99,8 @@ public:
   uint16_t get_engine_sound_volume(void);
   uint8_t get_over_speed_value(void);
   uint8_t get_idle_warning_time(void);
+  float get_battery_level(void);
+  float get_low_battery_warning_level(void);
 
 private:
   /** Variabel to hold the reference to the Serial object to use for UART */
@@ -116,7 +112,7 @@ private:
   soundData_t engineData;
   advancedData_t settingData;
   uint8_t soundTriggered=0;
-  int8_t enableItemData=-1; // check float_enable_mask neum 
+  uint8_t enableItemData=0; // check float_enable_mask neum 
   /**
    * @brief      Packs the payload and sends it over Serial
    *
