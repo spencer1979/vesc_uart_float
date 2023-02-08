@@ -8,8 +8,8 @@
 #define ESP32_COMMAND_ID 102
 typedef enum
 {
-
-	ESP_COMMAND_GET_ADV_INFO=0,   // get ADVANCED setting only for SPESC
+  ESP_COMMAND_GET_READY=0,
+	ESP_COMMAND_GET_ADV_INFO,   // get ADVANCED setting only for SPESC
 	ESP_COMMAND_ENGINE_SOUND_INFO, // engine sound info , erpm ,duty
 	// esp32 get the sound trigger
 	ESP_COMMAND_SOUND_GET,
@@ -81,7 +81,7 @@ public:
   void setDebugPort(Stream *port);
 
   /**Send uart command function*/
-  uint8_t get_fw_version(void);
+  bool get_vesc_ready(void);
 
   bool soundUpdate(void);
 
@@ -118,7 +118,8 @@ private:
   soundData_t engineData;
   advancedData_t settingData;
   uint8_t soundTriggered=0;
-  uint8_t enableItemData=0; // check float_enable_mask neum 
+  uint8_t enableItemData=0;
+  bool isVescReady=0; // check float_enable_mask neum 
   /**
    * @brief      Packs the payload and sends it over Serial
    *

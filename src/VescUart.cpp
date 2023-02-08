@@ -339,7 +339,7 @@ void VescUart::serialPrint(uint8_t *data, int len)
 	}
 }
 
-uint8_t VescUart::get_fw_version(void)
+bool VescUart::get_vesc_ready(void)
 {
 	
 	uint8_t message[50];
@@ -349,8 +349,8 @@ uint8_t VescUart::get_fw_version(void)
 	//send command to vesc 
 	uint8_t payload[payloadSize];
 	payload[index++] = {COMM_CUSTOM_APP_DATA};
-	payload[index++] = 101;
-	payload[index++] = 0;//FLOAT_COMMAND_GET_INFO
+	payload[index++] = ESP32_COMMAND_ID;
+	payload[index++] = ESP_COMMAND_GET_READY;//FLOAT_COMMAND_GET_INFO
 	packSendPayload(payload, payloadSize);
 
 	//process received data 
@@ -359,24 +359,24 @@ uint8_t VescUart::get_fw_version(void)
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
 
-	if (messageLength >= 3)
+	if (messageLength == 4)
 	{
 		packetId = (COMM_PACKET_ID)message[0];
 		if (packetId == COMM_CUSTOM_APP_DATA)
 		{
-			if (message[1] == 101 && message[2] == 0 )
+			if (message[1] == ESP32_COMMAND_ID && message[2] == ESP_COMMAND_GET_READY )
 			{   
 				
 				if (debugPort != NULL)
-					debugPort->printf("float version: %d\n", (uint8_t) message[3]);
-				return (uint8_t) message[3];
+					debugPort->printf("VESC ready ?: %d\n", (bool) message[3] ? "true":"false");
+				return (bool) message[3];
 			} 
 		} 
 	}
 
 	if (debugPort != NULL)
 		debugPort->printf("float version: 0\n");
-	return 0 ;
+	return false ;
 	
 }
 
