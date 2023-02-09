@@ -85,6 +85,7 @@ int VescUart::receiveUartMessage(uint8_t *payloadReceived)
 			}
 		}
 	}
+	
 	if (messageRead == false && debugPort != NULL)
 	{
 		debugPort->println("Timeout");
@@ -95,6 +96,10 @@ int VescUart::receiveUartMessage(uint8_t *payloadReceived)
 	if (messageRead)
 	{
 		unpacked = unpackPayload(messageReceived, endMessage, payloadReceived);
+	} else 
+	{
+		return 0;
+
 	}
 
 	if (unpacked)
@@ -342,7 +347,7 @@ void VescUart::serialPrint(uint8_t *data, int len)
 bool VescUart::get_vesc_ready(void)
 {
 	
-	uint8_t message[50];
+	uint8_t message[4];
 	COMM_PACKET_ID packetId;
 	int32_t index = 0;
 	int payloadSize = 3;
@@ -356,6 +361,12 @@ bool VescUart::get_vesc_ready(void)
 	//process received data 
 	index = 0;
 	int messageLength = receiveUartMessage(message);
+
+	if (messageLength == 0)
+	{
+		return false;
+	}
+
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
 
@@ -368,7 +379,7 @@ bool VescUart::get_vesc_ready(void)
 			{   
 				
 				if (debugPort != NULL)
-					debugPort->printf("VESC ready ?: %d\n", (bool) message[3] ? "true":"false");
+					debugPort->printf("VESC ready ?: %s\n", (bool) message[3] ? "true":"false");
 				return (bool) message[3];
 			} 
 		} 
@@ -376,6 +387,7 @@ bool VescUart::get_vesc_ready(void)
 
 	if (debugPort != NULL)
 		debugPort->printf("float version: 0\n");
+	
 	return false ;
 	
 }
