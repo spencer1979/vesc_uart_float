@@ -300,14 +300,18 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 			}
 
 			case ESP_COMMAND_ENABLE_ITEM_INFO:
-			{
-				enableItemData = (uint8_t)message[index++];
+			{	
+				uint8_t temp = (uint8_t)message[index++];
+				if (enableItemData != temp )
+				{
+					enableItemData = temp;
+				}
+
 				if (debugPort != NULL)
 				{
 					debugPort->printf("Enable item data is : %d \n", enableItemData);
 				}
 				return true;
-			
 			}
 
 			case ESP_COMMAND_SOUND_GET:
@@ -539,10 +543,11 @@ uint8_t VescUart::get_enable_item_data(void)
 		debugPort->printf("get message length is :%d\n", messageLength);
    if (messageLength ==4)
    {
-		if (  processReadPacket(message, messageLength) )
-		return enableItemData;
+		 processReadPacket(message, messageLength);
+		
    }
-   return 0;
+   
+   return enableItemData;
 }
 
 uint8_t VescUart::get_sound_triggered(void)
