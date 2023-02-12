@@ -27,13 +27,7 @@ typedef enum
 	SOUND_POLICE_TRIGGERED,
 } sound_triggered_mask;
 
-/// @brief Data source for calculating throttle
-typedef enum
-{
-	FLOAT_MOTOR_CURRENT = 0,
-	FLOAT_ERPM,
-	FLOAT_PID,
-} float_engine_sampling_source;
+
 
 //Determine the function of a certain bit
 typedef enum
