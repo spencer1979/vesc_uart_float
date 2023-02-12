@@ -27,6 +27,14 @@ typedef enum
 	SOUND_POLICE_TRIGGERED,
 } sound_triggered_mask;
 
+/// @brief Data source for calculating throttle
+typedef enum
+{
+	FLOAT_MOTOR_CURRENT = 0,
+	FLOAT_ERPM,
+	FLOAT_PID,
+} float_engine_sampling_source;
+
 //Determine the function of a certain bit
 typedef enum
 {
@@ -34,6 +42,7 @@ EXT_DCDC_ENABLE_MASK_BIT=0,
 ENGINE_SOUND_ENABLE_MASK_BIT,
 START_UP_WARNING_ENABLE_MASK_BIT,
 } float_enable_mask;
+
 
 
   class VescUart
@@ -47,6 +56,7 @@ START_UP_WARNING_ENABLE_MASK_BIT,
     uint8_t swState;
     float erpm;
     float inputVoltage;
+    float motorCurrent;
   };
 
 
@@ -58,6 +68,7 @@ START_UP_WARNING_ENABLE_MASK_BIT,
 	uint8_t over_speed_warning;
   float battery_level;
   float low_battery_warning_level;
+  uint8_t engine_sampling_data;
   };
   
 public:
@@ -87,7 +98,7 @@ public:
 
   bool advancedUpdate(void);
 
-  uint8_t get_enable_item_data(void);
+uint8_t get_enable_item_data(void);
 
   uint8_t get_sound_triggered(void);
 
@@ -96,18 +107,18 @@ public:
    */
   /**sound value Update with soundUdate() */
   float get_erpm(void);
-
   float get_input_voltage(void);
   float get_pid_output(void);
   uint8_t get_switch_state(void);
-
+ float get_motor_current(void);
   // advanced data Update with advancedUpdate*/
   uint16_t get_engine_sound_volume(void);
   uint8_t get_over_speed_value(void);
   uint8_t get_idle_warning_time(void);
   float get_battery_level(void);
   float get_low_battery_warning_level(void);
-
+//Use motor current , Erpm , pid as engine throttle
+uint8_t get_engine_sampling(void);
 private:
   /** Variabel to hold the reference to the Serial object to use for UART */
   Stream *serialPort = NULL;
@@ -119,6 +130,7 @@ private:
   advancedData_t settingData;
   uint8_t soundTriggered=0;
   uint8_t enableItemData=0;
+
   bool isVescReady=0; // check float_enable_mask neum 
   /**
    * @brief      Packs the payload and sends it over Serial

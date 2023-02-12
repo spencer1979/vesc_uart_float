@@ -249,20 +249,21 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 					uint8_t swState;
 					float erpm;
 					float inputVoltage;
+					float motorCurrent
 
 				 */
 				engineData.pidOutput = buffer_get_float32_auto(message, &index);
 				engineData.swState = (uint8_t)message[index++];
 				engineData.erpm = buffer_get_float32_auto(message, &index);
 				engineData.inputVoltage=buffer_get_float32_auto(message, &index);
-
+				engineData.motorCurrent=buffer_get_float32_auto(message, &index);
 				if (debugPort != NULL)
 				{
 					debugPort->printf(" Pid Value		:%.2f\n", engineData.pidOutput);
 					debugPort->printf(" Switch State	:%d\n", (uint8_t)engineData.swState);
 					debugPort->printf(" ERPM			:%.2f\n", engineData.erpm);
 					debugPort->printf(" Input Voltage			:%.2f\n", engineData.inputVoltage);
-	
+					debugPort->printf(" motor current			:%.2f\n", engineData.motorCurrent);
 				}
 
 				return true;
@@ -273,11 +274,13 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 			{
 				/**
 				 *
-					uint8_t lights_mode;
+				  uint8_t lights_mode;
 					uint8_t idle_warning_time;
 					uint16_t engine_sound_volume;
 					uint8_t over_speed_warning;
-
+  					float battery_level;
+  					float low_battery_warning_level;
+  					uint8_t engine_sampling_data;
 				 */
 				settingData.lights_mode = (uint8_t)message[index++];
 				settingData.idle_warning_time = (uint8_t)message[index++];
@@ -285,7 +288,7 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 				settingData.over_speed_warning = (uint8_t)message[index++];
 				settingData.battery_level=buffer_get_float32_auto( message, &index);
 				settingData.low_battery_warning_level=(float) message[index++];
-
+				settingData.engine_sampling_data=(uint8_t)message[index++];
 				if (debugPort != NULL)
 				{
 					debugPort->printf("lights_modee		:%d\n", settingData.lights_mode);
@@ -294,7 +297,9 @@ bool VescUart::processReadPacket(uint8_t *message, int lenPay)
 					debugPort->printf("settingData.over_speed_warning	:%d\r\n", settingData.over_speed_warning);
 					debugPort->printf("settingData.battery level	:%.2f \r\n", settingData.battery_level);
 					debugPort->printf("settingData.low_battery_warning_level	:%.2f \r\n", settingData.low_battery_warning_level);
-				}
+					debugPort->printf("settingData.engine_sampling_data	:%d \r\n", settingData.engine_sampling_data);
+					
+					}
 
 				return true;
 			}
@@ -415,7 +420,7 @@ bool VescUart::soundUpdate(void)
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
-	if (messageLength == 16 )
+	if (messageLength == 20 )
 	{
 		return processReadPacket(message, messageLength);
 	}
@@ -440,7 +445,7 @@ bool VescUart::advancedUpdate(void)
 	int messageLength = receiveUartMessage(message);
 	if (debugPort != NULL)
 		debugPort->printf("message Length :%d\r\n", messageLength);
-	if (messageLength == 13 )
+	if (messageLength == 14 )
 	{
 		return processReadPacket(message, messageLength);
 	}
@@ -488,6 +493,13 @@ float VescUart::get_pid_output(void){
 return engineData.pidOutput;
 
 }
+float VescUart::get_motor_current(void){
+
+	if (debugPort != NULL)
+		debugPort->printf("Get motor current %.2f\n",engineData.motorCurrent);
+return engineData.motorCurrent;
+
+}
 
 uint8_t VescUart::get_switch_state(void)
 {
@@ -523,6 +535,14 @@ uint8_t VescUart::get_idle_warning_time(void)
    return settingData.idle_warning_time;
 }
 
+
+uint8_t VescUart::get_engine_sampling(void)
+{ if (debugPort != NULL)
+		debugPort->printf("get_engine_sampling:%d\n", settingData.engine_sampling_data);
+
+   return settingData.engine_sampling_data;
+
+}
 uint8_t VescUart::get_enable_item_data(void)
 {
    if (debugPort != NULL)
