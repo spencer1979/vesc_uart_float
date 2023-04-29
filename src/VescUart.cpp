@@ -356,7 +356,7 @@ void VescUart::serialPrint(uint8_t *data, int len)
 bool VescUart::get_vesc_ready(void)
 {
 	
-	uint8_t message[4];
+	uint8_t message[256];
 	COMM_PACKET_ID packetId;
 	int32_t index = 0;
 	int payloadSize = 3;
